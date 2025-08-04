@@ -22,15 +22,53 @@ router.post("/userProgress", async (req, res) => {
         return;
     }
 
-        try {
 
-            const user = await User.findOne({ email: req.body.email }).populate("hiraganaProgress");
+
+
+
+    // recherche par katakana
+    if (req.body.katakana) {
+
+        const user = await User.findOne({ email: req.body.email })
+            .populate("katakanaProgress")
+        console.log(user.katakanaProgress.map(kata => kata.katakanaId.toString()))
+        const katakana = user.katakanaProgress.find(kata => kata.katakanaId.toString() === req.body.katakana)
+        console.log(katakana)
+        res.json({'katakanaProgress': katakana})
+
+
+
+        // recherche par hiragana
+    } else if (req.body.hiragana) {
+        console.log(req.body.hiragana)
+        const user = await User.findOne({ email: req.body.email })
+            .populate("hiraganaProgress")
+        console.log(user.hiraganaProgress.map(hira => hira.hiraganaId.toString()))
+        const hiragana = user.hiraganaProgress.find(hira => hira.hiraganaId.toString() === req.body.hiragana)
+        console.log(hiragana)
+        res.json({'hiraganaProgress': hiragana})
+
+
+
+        // recherche globale
+    } else {
+
+        try {
+        const user = await User.findOne({ email: req.body.email })
+            .populate("hiraganaProgress")
+            .populate("katakanaProgress")
+
+
             console.log(user)
-            res.json(user)
+            res.json({
+                "hiraganaProgress" : user.hiraganaProgress,
+                "katakanaProgress" : user.katakanaProgress
+            })
             
         } catch (error){
             console.log(error)
         }
+    }
 
 
     
