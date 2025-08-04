@@ -9,8 +9,8 @@ const UserSchema = new mongoose.Schema({
     password: String,   
     token: String,
     hasTuto : Boolean,
-    hiraganaProgress: { type: mongoose.Schema.Types.ObjectId, ref: 'hiraganaProgress' },
-    katakanaProgress: { type: mongoose.Schema.Types.ObjectId, ref: 'katakanaProgress' },
+    hiraganaProgress: [ {type: mongoose.Schema.Types.ObjectId, ref: 'hiraganaProgress'} ],
+    katakanaProgress: [ {type: mongoose.Schema.Types.ObjectId, ref: 'katakanaProgress'} ],
     hiraganaChallenge: {
         "1min": Number,
         "2min": Number,
