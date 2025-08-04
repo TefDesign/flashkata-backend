@@ -18,8 +18,9 @@ router.post('/kataGen', async (req, res) => {
     placeholder: 'req.body.placeholder',
     sound: 'req.body.sound'
   }).save()
+}
   res.json({result : true})
-  }
+
 })
 
 router.get('/', (req, res) => {
