@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const katakanaProgressSchema = new mongoose.Schema({
-    hiraganaId: String,
+    katakanaId: String,
     userId: String,
     isValidated: Boolean,
     validatedAt: Date,
