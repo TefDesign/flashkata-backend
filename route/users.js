@@ -12,10 +12,8 @@ router.post("/signup", async (req, res) => {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
   }
-try {
-    // // Check if the user has not already been registered
-    const data = await User.findOne({ userName: req.body.username });
-
+    try {
+const data = await User.findOne({ userName: req.body.username });
     if (data === null) {
         const hash = bcrypt.hashSync(req.body.password, 10);
     
@@ -70,15 +68,13 @@ try {
         result: true,
         token: newUser.token,
         userName: newUser.userName,
-        
-        
-        });
+    });
     } else {
-    res.json({ result: false, error: "User already exists" });
+        res.json({ result: false, error: "User already exists" });
     }
-} catch (error) {
-    console.log(error);
-}
+    } catch (error) {
+        console.log(error);
+    }
 });
 
 
@@ -96,6 +92,7 @@ User.findOne({ username: req.body.username }).then((data) => {
         result: true,
         token: data.token,
         username: data.username,
+        
     });
     } else {
         res.json({ result: false, error: "User not found or wrong password" });

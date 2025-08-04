@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const hiraganaProgressSchema = new mongoose.Schema({
-    hiraganaId: String,
-    userId: String,
+    hiraganaId: mongoose.Schema.Types.ObjectId,
+    userId: mongoose.Schema.Types.ObjectId,
     isValidated: Boolean,
     validatedAt: Date,
     responseTime: Number,
