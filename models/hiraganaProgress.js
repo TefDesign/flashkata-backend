@@ -9,6 +9,7 @@ const hiraganaProgressSchema = new mongoose.Schema({
     nbViews: Number,
     nbCorrect: Number,
     nbWrong: Number,
+    isFavorite: Boolean,
 });
 
 const HiraganaProgress = mongoose.model('HiraganaProgress', hiraganaProgressSchema);

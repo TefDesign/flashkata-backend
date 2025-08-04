@@ -9,6 +9,7 @@ const katakanaProgressSchema = new mongoose.Schema({
     nbViews: Number,
     nbCorrect: Number,
     nbWrong: Number,
+    isFavorite: Boolean,
 });
 
 const KatakanaProgress = mongoose.model('KatakanaProgress', katakanaProgressSchema);
