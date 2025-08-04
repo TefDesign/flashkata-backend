@@ -9,6 +9,8 @@ const port = 3000;
 require('./models/connection')
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 
 // liste des routes
 const indexRouter = require('./route/index');
