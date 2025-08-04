@@ -1,12 +1,52 @@
 const mongoose = require('mongoose');
 
-const katakanaSchema = new mongoose.Schema({
-    name: String,
-    image: String,
-    placeholder: String,
-    sound: String
+const UserSchema = new mongoose.Schema({
+    userName: String,
+    firstName: String,
+    lastName: String,
+    eMail: String,
+    token: String,
+    hasTuto : Boolean,
+    hiraganaProgress: [mongoose.Schema.Types.ObjectId],
+    katakanaProgress: [mongoose.Schema.Types.ObjectId],
+    hiraganaChallenge: {
+        "1min": Number,
+        "2min": Number,
+        "3min": Number,
+        "4min": Number,
+        "5min": Number,
+        "6min": Number,
+        "7min": Number,
+        "8min": Number,
+        "9min": Number,
+        "10min": Number
+    },
+    katakanaChallenge: {
+        "1min": Number,
+        "2min": Number,
+        "3min": Number,
+        "4min": Number,
+        "5min": Number,
+        "6min": Number,
+        "7min": Number,
+        "8min": Number,
+        "9min": Number,
+        "10min": Number
+    },
+    AllChallenge: {
+        "1min": Number,
+        "2min": Number,
+        "3min": Number,
+        "4min": Number,
+        "5min": Number,
+        "6min": Number,
+        "7min": Number,
+        "8min": Number,
+        "9min": Number,
+        "10min": Number
+    }
 });
 
-const Katakana = mongoose.model('Katakana', katakanaSchema);
+const User = mongoose.model('User', UserSchema);
 
-module.exports = Katakana;
+module.exports = User;
