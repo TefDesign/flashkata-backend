@@ -3,6 +3,10 @@ var router = express.Router();
 
 require("../models/connection");
 const User = require("../models/Users");
+const Katakana = require("../models/Katakana")
+const Hiragana = require("../models/Hiragana")
+const katakanaProgress = require("../models/katakanaProgress")
+const hiraganaProgress = require("../models/hiraganaProgress")
 const { checkBody } = require("../modules/checkBody");
 const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
@@ -13,11 +17,14 @@ router.post("/signup", async (req, res) => {
     return;
   }
     try {
+
 const data = await User.findOne({ userName: req.body.username });
     if (data === null) {
+
+        
         const hash = bcrypt.hashSync(req.body.password, 10);
     
-        const newUser = await new User({
+        let newUser = await new User({
             userName: req.body.username,
             password: hash,
             token: uid2(32),
@@ -63,7 +70,51 @@ const data = await User.findOne({ userName: req.body.username });
                 "10min": 0
             }
             
-    }).save()
+    })
+
+const kata = await Katakana.find({})
+    let kataProgress = [];
+    
+    for (let i = 0 ; i < kata.length ; i++){
+        const newKata = await new katakanaProgress ({
+            katakanaId: kata[i]._id,
+            userId: newUser._id,
+            isValidated: false,
+            validatedAt: new Date(),
+            responseTime: 0,
+            nbViews: 0,
+            nbCorrect: 0,
+            nbWrong: 0,
+            isFavorite: false,
+        }).save()
+        kataProgress = [...kataProgress, newKata._id]
+    
+}
+
+
+const hira = await Hiragana.find({})
+    let hiraProgress = [];
+
+    for (let i = 0 ; i < hira.length ; i++){
+        const newHira = await new hiraganaProgress ({
+            hiraganaId: hira[i]._id,
+            userId: newUser._id,
+            isValidated: false,
+            validatedAt: new Date(),
+            responseTime: 0,
+            nbViews: 0,
+            nbCorrect: 0,
+            nbWrong: 0,
+            isFavorite: false,
+        }).save()
+        hiraProgress = [...hiraProgress, newHira._id]
+    
+}
+    console.log(hiraProgress)
+    newUser.hiraganaProgress = hiraProgress
+    newUser.katakanaProgress = kataProgress
+    newUser.save()
+
     res.json({ 
         result: true,
         token: newUser.token,
@@ -92,7 +143,7 @@ User.findOne({ username: req.body.username }).then((data) => {
         result: true,
         token: data.token,
         username: data.username,
-        
+
     });
     } else {
         res.json({ result: false, error: "User not found or wrong password" });
