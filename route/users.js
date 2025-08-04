@@ -12,27 +12,69 @@ router.post("/signup", async (req, res) => {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
   }
-  try {
-    // Check if the user has not already been registered
-    const data = await User.findOne({ username: req.body.username });
+try {
+    // // Check if the user has not already been registered
+    const data = await User.findOne({ userName: req.body.username });
 
-    if (data === null) {
-      const hash = bcrypt.hashSync(req.body.password, 10);
+if (data === null) {
+    const hash = bcrypt.hashSync(req.body.password, 10);
 
-      const newUser = new User({
-        username: req.body.username,
+    const newUser = await new User({
+        userName: req.body.username,
         password: hash,
         token: uid2(32),
-      });
+        avatar: req.body.avater,
+        firstName: req.body.user,
+        lastName: req.body.lastName,
+        email: req.body.email, 
+        hasTuto : req.body.hasTuto,
+        hiraganaChallenge: {
+            "1min": 0,
+            "2min": 0,
+            "3min": 0,
+            "4min": 0,
+            "5min": 0,
+            "6min": 0,
+            "7min": 0,
+            "8min": 0,
+            "9min": 0,
+            "10min": 0
+        },
+        katakanaChallenge: {
+            "1min": 0,
+            "2min": 0,
+            "3min": 0,
+            "4min": 0,
+            "5min": 0,
+            "6min": 0,
+            "7min": 0,
+            "8min": 0,
+            "9min": 0,
+            "10min": 0
+        },
+        AllChallenge: {
+            "1min": 0,
+            "2min": 0,
+            "3min": 0,
+            "4min": 0,
+            "5min": 0,
+            "6min": 0,
+            "7min": 0,
+            "8min": 0,
+            "9min": 0,
+            "10min": 0
+        }
 
-      newUser.save().then((newDoc) => {
-        res.json({ 
-          result: true,
-          token: newDoc.token,
-          username: newDoc.username,
 
+
+      }).save()
+      res.json({ 
+        result: true,
+        token: newUser.token,
+        userName: newUser.userName,
+        
+        
         });
-      });
     } else {
       // User already exists in database
       res.json({ result: false, error: "User already exists" });
@@ -59,39 +101,6 @@ router.post("/signin", (req, res) => {
       res.json({ result: false, error: "User not found or wrong password" });
     }
   });
-});
-
-router.get("/bestScoreUser", async (req, res) => {
-  const { username } = req.query;
-  if (!username) {
-    res.json({ result: false, error: "Missing username" });
-    return;
-  }
-  const user = await User.findOne({ username });
-  if (user) {
-    res.json({ result: true, bestScoreUser: user.bestScore });
-  } else {
-    res.json({ result: false, bestScoreUser: 0 });
-  }
-});
-
-router.patch("/bestScoreUser", async (req, res) => {
-  const { username, score } = req.body;
-  if (!username || typeof score !== "number") {
-    return res.json({ result: false, error: "Missing data" });
-  }
-
-  const user = await User.findOne({ username });
-  if (!user) {
-    return res.json({ result: false, error: "User not found" });
-  }
-
-  if (score > (user.bestScore ?? 0)) {
-    user.bestScore = score;
-    await user.save();
-  }
-
-  res.json({ result: true, bestScoreUser: user.bestScore });
 });
 
 
