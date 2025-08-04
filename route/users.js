@@ -30,9 +30,8 @@ router.post("/signup", async (req, res) => {
           result: true,
           token: newDoc.token,
           username: newDoc.username,
-          bestScore: newDoc.bestScore ?? 0,});
       });
-    } else {
+    }} else {
       // User already exists in database
       res.json({ result: false, error: "User already exists" });
     }
