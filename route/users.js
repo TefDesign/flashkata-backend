@@ -30,8 +30,10 @@ router.post("/signup", async (req, res) => {
           result: true,
           token: newDoc.token,
           username: newDoc.username,
+
+        });
       });
-    }} else {
+    } else {
       // User already exists in database
       res.json({ result: false, error: "User already exists" });
     }
@@ -49,10 +51,9 @@ router.post("/signin", (req, res) => {
   User.findOne({ username: req.body.username }).then((data) => {
     if (data && bcrypt.compareSync(req.body.password, data.password)) {
       res.json({
-        // result: true,
-        // token: data.token,
-        // username: data.username,
-
+        result: true,
+        token: data.token,
+        username: data.username,
       });
     } else {
       res.json({ result: false, error: "User not found or wrong password" });
@@ -60,7 +61,38 @@ router.post("/signin", (req, res) => {
   });
 });
 
+router.get("/bestScoreUser", async (req, res) => {
+  const { username } = req.query;
+  if (!username) {
+    res.json({ result: false, error: "Missing username" });
+    return;
+  }
+  const user = await User.findOne({ username });
+  if (user) {
+    res.json({ result: true, bestScoreUser: user.bestScore });
+  } else {
+    res.json({ result: false, bestScoreUser: 0 });
+  }
+});
 
+router.patch("/bestScoreUser", async (req, res) => {
+  const { username, score } = req.body;
+  if (!username || typeof score !== "number") {
+    return res.json({ result: false, error: "Missing data" });
+  }
+
+  const user = await User.findOne({ username });
+  if (!user) {
+    return res.json({ result: false, error: "User not found" });
+  }
+
+  if (score > (user.bestScore ?? 0)) {
+    user.bestScore = score;
+    await user.save();
+  }
+
+  res.json({ result: true, bestScoreUser: user.bestScore });
+});
 
 
 
