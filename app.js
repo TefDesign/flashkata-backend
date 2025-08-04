@@ -18,12 +18,14 @@ app.use(express.urlencoded({ extended: true }));
 // liste des routes
 const indexRouter = require('./route/index');
 const usersRouter = require('./route/users');
+const progressRouter = require('./route/progress');
 
 
 
 // redir des routes
 app.use('/', indexRouter);
 app.use("/users", usersRouter);
+app.use('/progress', progressRouter);
 
 
 

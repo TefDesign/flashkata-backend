@@ -11,8 +11,9 @@ const { checkBody } = require("../modules/checkBody");
 const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
 
+
 router.post("/signup", async (req, res) => {
-  if (!checkBody(req.body, ["username", "password"])) {
+  if (!checkBody(req.body, ["username", "password", "email"])) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
   }
@@ -109,9 +110,11 @@ const hira = await Hiragana.find({})
         hiraProgress = [...hiraProgress, newHira._id]
     
 }
-    console.log(hiraProgress)
+
+    
     newUser.hiraganaProgress = hiraProgress
     newUser.katakanaProgress = kataProgress
+    console.log("c'est ici cette fois ci")
     newUser.save()
 
     res.json({ 
@@ -123,27 +126,25 @@ const hira = await Hiragana.find({})
         res.json({ result: false, error: "User already exists" });
     }
     } catch (error) {
-        console.log(error);
+        console.log("Coucou c'est làa", error);
     }
 });
 
 
-
-
 router.post("/signin", (req, res) => {
-if (!checkBody(req.body, ["username", "password"])) {
+if (!checkBody(req.body, ["password", "email"])) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
 }
-
-User.findOne({ username: req.body.username }).then((data) => {
-    if (data && bcrypt.compareSync(req.body.password, data.password)) {
-        res.json({
-        result: true,
-        token: data.token,
-        username: data.username,
-
-    });
+    // User.findOne({ username: req.body.username })
+    User.findOne({ email: req.body.email }).then((data) => {
+        if (data && bcrypt.compareSync(req.body.password, data.password)) {
+            res.json({
+                result: true,
+                token: data.token,
+                username: data.username,
+                isConnected: true,
+            });
     } else {
         res.json({ result: false, error: "User not found or wrong password" });
     }
