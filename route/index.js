@@ -5,7 +5,7 @@ const Hiragana = require('../models/Hiragana');
 
 
 router.get('/', (req, res) => {
-  res.send('kata!!!!');
+  res.json('kata!!!!');
 });
 
 router.get('/katakana', async(req, res) => {
@@ -26,8 +26,8 @@ router.post('/addKatakana', async(req, res) => {
     sound: req.body.sound
   }).save()
   res.json({result : "katakana enregistré"})
-
 });
+
 
 router.post('/addHiragana', async(req, res) => {
   const resp = await new Hiragana({
