@@ -1,8 +1,15 @@
 const mongoose = require('mongoose');
 
 const katakanaProgressSchema = new mongoose.Schema({
-    katakanaId: mongoose.Schema.Types.ObjectId,
-    userId: mongoose.Schema.Types.ObjectId,
+    katakanaId: {
+        type : mongoose.Schema.Types.ObjectId,
+        ref: 'Katakanas'
+    },
+    userId: {
+        type : mongoose.Schema.Types.ObjectId,
+        ref: 'Users'
+    },
+    name: String,
     isValidated: Boolean,
     validatedAt: Date,
     responseTime: Number,
