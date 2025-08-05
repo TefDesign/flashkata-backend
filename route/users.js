@@ -5,8 +5,8 @@ require("../models/connection");
 const User = require("../models/Users");
 const Katakana = require("../models/Katakana");
 const Hiragana = require("../models/Hiragana");
-const katakanaProgress = require("../models/katakanaProgress");
-const hiraganaProgress = require("../models/hiraganaProgress");
+const katakanaProgress = require("../models/KatakanaProgress");
+const hiraganaProgress = require("../models/HiraganaProgress");
 const { checkBody } = require("../modules/checkBody");
 const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
@@ -80,6 +80,7 @@ router.post("/signup", async (req, res) => {
           userId: newUser._id,
           isValidated: false,
           validatedAt: new Date(),
+          name: kata[i].name,
           responseTime: 0,
           nbViews: 0,
           nbCorrect: 0,
@@ -99,6 +100,7 @@ router.post("/signup", async (req, res) => {
           userId: newUser._id,
           isValidated: false,
           validatedAt: new Date(),
+          name: hira[i].name,
           responseTime: 0,
           nbViews: 0,
           nbCorrect: 0,
