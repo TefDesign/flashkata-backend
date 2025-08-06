@@ -86,6 +86,7 @@ router.post("/signup", async (req, res) => {
           nbCorrect: 0,
           nbWrong: 0,
           isFavorite: false,
+          priority : 1
         }).save();
         kataProgress = [...kataProgress, newKata._id];
       }
@@ -106,6 +107,7 @@ router.post("/signup", async (req, res) => {
           nbCorrect: 0,
           nbWrong: 0,
           isFavorite: false,
+          priority: 1
         }).save();
         hiraProgress = [...hiraProgress, newHira._id];
       }
