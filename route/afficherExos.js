@@ -9,16 +9,30 @@ const KatakanaProgress = require("../models/KatakanaProgress");
 const HiraganaProgress = require("../models/HiraganaProgress");
 const { checkBody } = require("../modules/checkBody");
 
+router.post("/exosNewKataORHira", async (req, res) =>{
 
-router.post("/exos", async (req, res) => {
+    // ajout token plus tard
+    if (!checkBody(req.body, ["id", "password"])) {
+        res.json({ result: false, error: "Missing or empty fields" });
+        return;
+    }
 
+    const nbKata = Number(req.body.katakana)
+    const nbHira = Number(req.body.hiragana)
+    const nbViewsKata = Number(req.body.nbViews)
+
+    console.log("la:", nbViewsKata)
+
+})
+
+router.post("/exosAllKataORHira", async (req, res) => {
 
                             // ajout token plus tard
     if (!checkBody(req.body, ["id", "password"])) {
         res.json({ result: false, error: "Missing or empty fields" });
         return;
     }
-
+            // changer nom plus explicite que req.body.katakana genre req.body.NbCurseur? Des avis?
     const nbKata = Number(req.body.katakana)
     const nbHira = Number(req.body.hiragana)
 
@@ -30,7 +44,8 @@ router.post("/exos", async (req, res) => {
             let kataAll = await Katakana.find();
             let kataProgList = user.katakanaProgress;
 
-            // fusion kataAll et kataProgress
+
+            // fusion kataAll et kataProgress par un map
             let kataAllWithProgress = kataAll.map(kata => {
                 // p = 1 kataProgress de user
                 let prog = kataProgList.find(p => p.katakanaId.toString() === kata._id.toString());
@@ -41,12 +56,15 @@ router.post("/exos", async (req, res) => {
             })
 
             let selected = [];
-
+                // 
             for (let i = 0  ; i < nbKata && kataAllWithProgress.length > 0 ; i++){
+
                 const randomIndex = Math.floor(Math.random() * kataAllWithProgress.length);
+
                 selected.push(kataAllWithProgress[randomIndex])
                 kataAllWithProgress.splice(randomIndex, 1)
             }
+
             return res.json(selected)
         } catch(error) {
             return res.json(error)
@@ -54,13 +72,29 @@ router.post("/exos", async (req, res) => {
 
     else if (req.body.hiragana) {
         try {
+
+            let user = await User.findById({_id: req.body.id})
+            .populate("hiraganaProgress")
+
             let hiraAll = await Hiragana.find();
+            let hiraProgList = user.hiraganaProgress;
+
+            // fusion hiraAll et hiraProgress
+            let hiraAllWithProgress = hiraAll.map(hira => {
+                // p = 1 hiraProgress de user
+                let prog = hiraProgList.find(p => p.hiraganaId.toString() === hira._id.toString());
+                return {
+                    ...hira.toObject(),
+                    progression: prog || null
+                };
+            })
+
             let selected = [];
-            // selected = hiraAll.filter((hira, i) => {return Math.random() < 0.1 ? hira: null})
-            for (let i = 0  ; i < Number(req.body.hiragana) ; i++){
-                const hiraNbSelect = hiraAll[Math.floor(Math.random() * hiraAll.length)]
-                selected.push(hiraNbSelect);
-                hiraAll = hiraAll.filter((hira, i) => {return i !== hiraNbSelect ? hira: null})
+
+            for (let i = 0  ; i < nbHira && hiraAllWithProgress.length > 0 ; i++){
+                const randomIndex = Math.floor(Math.random() * hiraAllWithProgress.length);
+                selected.push(hiraAllWithProgress[randomIndex])
+                hiraAllWithProgress.splice(randomIndex, 1)
             }
             return res.json(selected)
         } catch(error) {
@@ -70,6 +104,10 @@ router.post("/exos", async (req, res) => {
     res.json({result: false})
 
 
+})
+
+router.post("/exosAllKataANDHira", async (req, res) =>{
+    
 })
 
 
