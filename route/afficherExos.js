@@ -51,17 +51,16 @@ router.post("/UnviewedCard", async (req, res) =>{
                     progression: prog || null
                 };
             })
-            console.log("step3 good")
-            console.log("progression", kataAllWithProgress[0].progression.nbViews)
+console.log("step3 good")
+console.log("progression", kataAllWithProgress[0].progression.nbViews)
 
-            // let theseAreNotViewed = []
             let filtered = []
 
             const KataProgressByUnviewed = kataAllWithProgress.filter(e =>  { return e.progression.nbViews <= 0})
             filtered.push(...KataProgressByUnviewed)
 
-            console.log("step4 good")
-            console.log("filtered", filtered.length)
+console.log("step4 good")
+console.log("filtered", filtered.length)
 
             let selected = [];
                 // 
@@ -73,8 +72,8 @@ router.post("/UnviewedCard", async (req, res) =>{
                 filtered.splice(randomIndex, 1)
             }
 
-            console.log("step5 good")
-            console.log("selected", selected.length)
+console.log("step5 good")
+console.log("selected", selected.length)
 
             return res.json(selected)
         } catch(error) {
