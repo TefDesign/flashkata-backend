@@ -3,20 +3,21 @@ const mongoose = require('mongoose');
 const hiraganaProgressSchema = new mongoose.Schema({
     hiraganaId: {
         type : mongoose.Schema.Types.ObjectId ,
-        ref : "Hiraganas"
+        ref : "Hiragana"
     },
     userId: {
         type : mongoose.Schema.Types.ObjectId,
-        ref : "Users"
+        ref : "User"
     },
     name : String,
     isValidated: Boolean,
     validatedAt: Date,
-    responseTime: Number,
+    responseTime: [Number],
     nbViews: Number,
     nbCorrect: Number,
     nbWrong: Number,
     isFavorite: Boolean,
+    priority: Number
 });
 
 const HiraganaProgress = mongoose.model('HiraganaProgress', hiraganaProgressSchema);
