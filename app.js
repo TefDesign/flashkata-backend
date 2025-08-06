@@ -19,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 const indexRouter = require('./route/index');
 const usersRouter = require('./route/users');
 const progressRouter = require('./route/progress');
+const afficherExosRouter = require('./route/afficherExos')
 
 
 
@@ -26,6 +27,7 @@ const progressRouter = require('./route/progress');
 app.use('/', indexRouter);
 app.use("/users", usersRouter);
 app.use('/progress', progressRouter);
+app.use('/afficherExos', afficherExosRouter)
 
 
 
