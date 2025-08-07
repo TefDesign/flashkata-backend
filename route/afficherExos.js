@@ -24,9 +24,8 @@ if (!checkBody(req.body, ["id", "password"])) {
 
     const nbCursor = Number(req.body.NbByCursor) // Choix du nb de kata par le curseur
 
-    const NewBatch = req.body.needNewBatch // Booléen
-    
-    const onlyViewedKata = req.body.onlyViewedKata // Cartes déjà vu?
+
+
     const onlyViewedHira = req.body.onlyViewedHira // Booléen
 
 // Unviewed Kata Ok
@@ -38,19 +37,19 @@ if (true) {
 
             // Chargé User et populate le progress dans User
             let user = await User.findById({_id: req.body.id})
-            type === "hiragana" || type === "All" ? await user.populate("hiraganaProgress") : null
-            type === "katakana" || type === "All" ? await user.populate("katakanaProgress") : null
+            type === "hiragana" || type === "all" ? await user.populate("hiraganaProgress") : null
+            type === "katakana" || type === "all" ? await user.populate("katakanaProgress") : null
 
-console.log("t1", user)
+console.log("t1")
             // 
             let kataAll = [];
             
-            if (type === "katakana" || type === "All"){
+            if (type === "katakana" || type === "all"){
                 const kata = await Katakana.find()
                 kataAll = [...kataAll, ...kata]
             }
             
-            if (type === "hiragana" || type === "All"){
+            if (type === "hiragana" || type === "all"){
                 const kata = await Hiragana.find()
                 kataAll = [...kataAll, ...kata]
             }
@@ -59,11 +58,11 @@ console.log("t1", user)
 
             let kataProgList = [];
 
-            if (type === "katakana" || type === "All"){
+            if (type === "katakana" || type === "all"){
                 kataProgList = [...kataProgList, ...user.katakanaProgress]
             }
             
-            if (type === "hiragana" || type === "All"){
+            if (type === "hiragana" || type === "all"){
                 kataProgList = [...kataProgList, ...user.hiraganaProgress]
             }
 
@@ -74,29 +73,36 @@ console.log("kaaaa", kataProgList.length)
 
             let kataAllWithProgress = kataAll.map(kata => {
 
-                console.log("l")
 
                 let prog;
-                console.log("pr", kataProgList.some(p => p.katakanaId === kata._id))
 
-                if (kataProgList.some(p => p.katakanaId === kata._id)){
-                    console.log("untruc")
-                    prog = kataProgList.find(p => p.katakanaId.toString() === kata._id.toString()); 
-                }
                 
-                if (kataProgList.some(p => p.hiraganaId.toString() === kata._id.toString())){
-                    console.log("unautretruc")
-                    prog = kataProgList.find(p => p.hiraganaId.toString() === kata._id.toString());
-                }
+                if (kataProgList.some(p => p.katakanaId?.toString() === kata._id.toString())){
 
+                    prog = kataProgList?.find(p => p.katakanaId?.toString() === kata._id.toString()); 
 
-                return {
+                    return {
                     ...kata.toObject(),
                     progression: prog || null
                 };
+
+                }
+                
+                if (kataProgList.some(p => p.hiraganaId?.toString() === kata._id.toString())){
+                    prog = kataProgList?.find(p => p.hiraganaId?.toString() === kata._id.toString());
+                    
+                    return {
+                    ...kata.toObject(),
+                    progression: prog || null
+                };
+
+                }
+
+
+
             })
 
-console.log("step3 good")
+console.log("step3 good", kataAllWithProgress.length)
 
 // console.log("progression", kataAllWithProgress[0].progression.nbViews)
 
