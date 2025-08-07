@@ -133,25 +133,26 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-router.post("/signin", (req, res) => {
+
+router.post("/signin", async(req, res) => {
   if (!checkBody(req.body, ["password", "email"])) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
   }
 
-  User.findOne({ email: req.body.email }).then((data) => {
-    if (data && bcrypt.compareSync(req.body.password, data.password)) {
+  const user = await User.findOne({ email: req.body.email })
+
+    if (user && bcrypt.compareSync(req.body.password, user.password)) {
       res.json({
         result: true,
-        token: data.token,
-        username: data.username,
-        id : data._id,
+        token: user.token,
+        username: user.username,
+        id : user._id,
         isConnected: true,
-      });
+    })
     } else {
-      res.json({ result: false, error: "User not found or wrong password" });
+      res.json(user ? { result: false, error: "wrong password" } :  { result: false, error: "user not found" })
     }
-  });
 });
 
 module.exports = router;
