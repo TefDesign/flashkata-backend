@@ -11,7 +11,7 @@ const { checkBody } = require("../modules/checkBody");
 const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
 
-
+// models pour les objets challenge
 const challengeModel = {
   "1min": 0,
   "2min": 0,
@@ -25,93 +25,95 @@ const challengeModel = {
   "10min": 0,
 };
 
-router.get('/getUser/:id/:token', async(req, res) => {
-  try {
-  const user = await User.findById({_id : req.params.id})
+// fonction pour créer les progressions d'un utilisateur
+const createProgress = async ({ list, userId, ProgressModel, idField }) => {
+  const progressIds = [];
 
-  res.json(req.params.token === user.token ? {result : true, user : user} : {result : false, error : 'invalid token'})
-  } catch (error) {
-    res.json({error : error})
+  for (const item of list) {
+    const newProgress = await new ProgressModel({
+      [idField]: item._id,
+      userId: userId,
+      isValidated: false,
+      validatedAt: new Date(),
+      name: item.name,
+      responseTime: 0,
+      nbViews: 0,
+      nbCorrect: 0,
+      nbWrong: 0,
+      isFavorite: false,
+      priority: 1,
+    }).save();
+
+    progressIds.push(newProgress._id);
   }
-})
 
+  return progressIds;
+};
+
+// recupère les information d'un utilisateur avec les params
+router.get("/getUser/:id/:token", async (req, res) => {
+  try {
+    const user = await User.findById({ _id: req.params.id });
+
+    // verification du token avant la réponse
+    res.json(
+      req.params.token === user.token
+        ? { result: true, user: user }
+        : { result: false, error: "invalid token" }
+    );
+  } catch (error) {
+    res.json({ error: error });
+  }
+});
+
+// route pour l'inscription
 router.post("/signup", async (req, res) => {
   if (!checkBody(req.body, ["username", "password", "email"])) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
   }
   try {
-    console.log("debut route");
-
     const data = await User.findOne({ email: req.body.email });
     if (data === null) {
-
+      // creation d'un utilisateur
       let newUser = await new User({
         userName: req.body.username,
         password: bcrypt.hashSync(req.body.password, 10),
         token: uid2(32),
-        avatar: req.body.avatar ? req.body.avatar : '',
-        firstName: req.body.firstName ? req.body.firstName : '',
-        lastName: req.body.lastName ? req.body.lastName : '',
+        avatar: req.body.avatar ? req.body.avatar : "",
+        firstName: req.body.firstName ? req.body.firstName : "",
+        lastName: req.body.lastName ? req.body.lastName : "",
         email: req.body.email,
         hasTuto: false,
         hiraganaChallenge: challengeModel,
         katakanaChallenge: challengeModel,
         AllChallenge: challengeModel,
       });
-      console.log("user crée");
 
+      // on cherche la liste des katakana et on boucle pour créer une liste de katakana progress
+      const katakanaList = await Katakana.find({});
+      const kataProgress = await createProgress({
+        list: katakanaList,
+        userId: newUser._id,
+        ProgressModel: katakanaProgress,
+        idField: "katakanaId",
+      });
 
-      let kataProgress = [];
-      const kata = await Katakana.find({});
-    
-      for (let i = 0; i < kata.length; i++) {
-        const newKata = await new katakanaProgress({
-          katakanaId: kata[i]._id,
-          userId: newUser._id,
-          isValidated: false,
-          validatedAt: new Date(),
-          name: kata[i].name,
-          responseTime: 0,
-          nbViews: 0,
-          nbCorrect: 0,
-          nbWrong: 0,
-          isFavorite: false,
-          priority: 1,
-        }).save();
-        kataProgress = [...kataProgress, newKata._id];
-      }
-      console.log("kata crée");
+      // on cherche la liste des hiragana et on boucle pour créer une liste de hiragana progress
+      const hiraganaListe = await Hiragana.find({});
+      const hiraProgress = await createProgress({
+        list: hiraganaListe,
+        userId: newUser._id,
+        ProgressModel: hiraganaProgress,
+        idField: "hiraganaId",
+      });
 
-
-      let hiraProgress = [];      
-      const hira = await Hiragana.find({});
-
-      for (let i = 0; i < hira.length; i++) {
-        const newHira = await new hiraganaProgress({
-          hiraganaId: hira[i]._id,
-          userId: newUser._id,
-          isValidated: false,
-          validatedAt: new Date(),
-          name: hira[i].name,
-          responseTime: 0,
-          nbViews: 0,
-          nbCorrect: 0,
-          nbWrong: 0,
-          isFavorite: false,
-          priority: 1,
-        }).save();
-        hiraProgress = [...hiraProgress, newHira._id];
-      }
-
-      console.log("hira crée");
-
+      // on ajoute les listes de progress dans l'utilisateur
       newUser.hiraganaProgress = hiraProgress;
-      console.log("hira save");
       newUser.katakanaProgress = kataProgress;
-      console.log("kata save");
+
+      // on sauvegarde l'utilisateur
       newUser.save();
-      console.log("user save");
 
       res.json({
         result: true,
@@ -119,6 +121,7 @@ router.post("/signup", async (req, res) => {
         username: newUser.userName,
         id: newUser._id,
         isConnected: true,
+        user: newUser,
       });
     } else {
       res.json({ result: false, error: "User already exists" });
@@ -129,6 +132,7 @@ router.post("/signup", async (req, res) => {
   }
 });
 
+// route pour la connexion
 router.post("/signin", async (req, res) => {
   if (!checkBody(req.body, ["password", "email"])) {
     res.json({ result: false, error: "Missing or empty fields" });
@@ -137,6 +141,7 @@ router.post("/signin", async (req, res) => {
 
   const user = await User.findOne({ email: req.body.email });
 
+  // verification de l'utilisateur et du mot de passe
   if (user && bcrypt.compareSync(req.body.password, user.password)) {
     res.json({
       result: true,
@@ -184,7 +189,5 @@ router.patch("/modify", async (req, res) => {
     res.json({ result: false, error: error });
   }
 });
-
-
 
 module.exports = router;
