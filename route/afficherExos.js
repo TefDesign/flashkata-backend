@@ -12,71 +12,101 @@ const { checkBody } = require("../modules/checkBody");
 const { switcherType } = require("../modules/switcherType")
 
 
+function filter (filterType, moy, kataAllWithProgress, nbCursor) {
+
+    
+    let filtered;
+   
+    if (filterType === "neverViewed"){
+
+    filtered = kataAllWithProgress.filter(e =>  { return e.progression.nbViews <= 0})
+    filtered && filtered.length > nbCursor ? null : filtered = kataAllWithProgress.filter(e =>  { return e.progression.nbViews < moy})
+
+    return filtered
+}
+    
+
+    else if (filterType === "onlyViewed")
+    {
+        filtered = kataAllWithProgress.filter(e =>  { return e.progression.nbViews > 0})
+        filtered && filtered.length > nbCursor ? null : filtered = kataAllWithProgress.filter(e =>  { return e.progression.nbViews > moy})
+        return filtered
+    }
+
+    else if (filterType === "all")
+    {
+        filtered = kataAllWithProgress
+        // filtered && filtered.length > nbCursor ? null : filtered = kataAllWithProgress.filter(e =>  { return e.progression.nbViews < moy})
+        return filtered
+    }
+    else if (filterType === "ChallengeAll")
+        {
+            filtered = kataAllWithProgress.filter(e =>  { return e.progression.nbViews > 0})
+        filtered && filtered.length > nbCursor ? null : filtered = kataAllWithProgress.filter(e =>  { return e.progression.nbViews > moy})
+        return filtered
+        }
+
+}
 
 
-router.post("/UnviewedCard", async (req, res) =>{
+
+router.post("/giveMeSomeCards", async (req, res) =>{
 
      // ajout token plus tard
-if (!checkBody(req.body, ["id", "password"])) {
+if (!checkBody(req.body, ["id", "token"])) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
 }
-
     const nbCursor = Number(req.body.NbByCursor) // Choix du nb de kata par le curseur
 
-
-
-    const onlyViewedHira = req.body.onlyViewedHira // Booléen
-
 // Unviewed Kata Ok
-// req.body.NbByCursorKata && onlyViewedKata === "false" && !isNaN(nbCursor)
-if (true) {
         try {
             
-            const type = req.body.type
-
+            const kataType = req.body.kataType
+            const filterType = req.body.filterType
+           
             // Chargé User et populate le progress dans User
             let user = await User.findById({_id: req.body.id})
-            type === "hiragana" || type === "all" ? await user.populate("hiraganaProgress") : null
-            type === "katakana" || type === "all" ? await user.populate("katakanaProgress") : null
+            kataType === "hiragana" || kataType === "all" ? await user.populate("hiraganaProgress") : null
+            kataType === "katakana" || kataType === "all" ? await user.populate("katakanaProgress") : null
 
-console.log("t1")
+            if (user.token !== req.body.token) {
+                res.json({result: false, error: "token invalide"})
+                return
+            }
             // 
             let kataAll = [];
             
-            if (type === "katakana" || type === "all"){
+            if (kataType === "katakana" || kataType === "all"){
                 const kata = await Katakana.find()
                 kataAll = [...kataAll, ...kata]
             }
             
-            if (type === "hiragana" || type === "all"){
+            if (kataType === "hiragana" || kataType === "all"){
                 const kata = await Hiragana.find()
                 kataAll = [...kataAll, ...kata]
             }
        
-// console.log("ggg", kataAll.length)
+// Incrémentation progression
 
             let kataProgList = [];
 
-            if (type === "katakana" || type === "all"){
+            if (kataType === "katakana" || kataType === "all"){
                 kataProgList = [...kataProgList, ...user.katakanaProgress]
             }
             
-            if (type === "hiragana" || type === "all"){
+            if (kataType === "hiragana" || kataType === "all"){
                 kataProgList = [...kataProgList, ...user.hiraganaProgress]
             }
 
 console.log("kaaaa", kataProgList.length)
-        
 
-            // fusion kataAll et kataProgress par un map
+// Fusion kataAll et progress
 
             let kataAllWithProgress = kataAll.map(kata => {
 
-
                 let prog;
 
-                
                 if (kataProgList.some(p => p.katakanaId?.toString() === kata._id.toString())){
 
                     prog = kataProgList?.find(p => p.katakanaId?.toString() === kata._id.toString()); 
@@ -97,20 +127,13 @@ console.log("kaaaa", kataProgList.length)
                 };
 
                 }
-
-
-
             })
 
 console.log("step3 good", kataAllWithProgress.length)
 
-// console.log("progression", kataAllWithProgress[0].progression.nbViews)
-
-
             let moy = kataAllWithProgress.reduce((acc, value) => value.progression.nbViews + acc,0)/kataAllWithProgress.length
 
-            let filtered = kataAllWithProgress.filter(e =>  { return e.progression.nbViews <= 0})
-            filtered && filtered.length > nbCursor ? null : filtered = kataAllWithProgress.filter(e =>  { return e.progression.nbViews < moy})
+            let filtered = filter(filterType, moy, kataAllWithProgress, nbCursor);
 
 
 console.log("step4 good")
@@ -149,327 +172,8 @@ console.log("step5 good")
             
             return res.json(error)
         }
-}
-
-// Unviewed Hira Ok
-if (req.body.NbByCursorHira && onlyViewedHira === "false" && !isNaN(nbCursor)) {
-    try {
-
-        // Chargé User et populate le progress dans User
-        let user = await User.findById({_id: req.body.id})
-        .populate("hiraganaProgress")
-
-
-        // 
-        let hiraAll = await Hiragana.find();
-        let hiraProgList = user.hiraganaProgress;
-
-        // fusion hiraAll et hiraProgress par un map
-        let hiraAllWithProgress = hiraAll.map(hira => {
-            // p = 1 hiraProgress de user
-            let prog = hiraProgList.find(p => p.hiraganaId.toString() === hira._id.toString());
-            return {
-                ...hira.toObject(),
-                progression: prog || null
-            };
-        })
-
-// console.log("step3 good")
-// console.log("progression", hiraAllWithProgress[0].progression.nbViews)
-
-
-        let moy = hiraAllWithProgress.reduce((acc, value) => value.progression.nbViews + acc,0)/hiraAllWithProgress.length
-
-        let filtered = hiraAllWithProgress.filter(e =>  { return e.progression.nbViews <= 0})
-        filtered && filtered.length > nbHira ? null : filtered = hiraAllWithProgress.filter(e =>  { return e.progression.nbViews < moy})
-
-
-console.log("step4 good")
-console.log("filtered", filtered.length)
-console.log("moy", moy)
-
-
-        //  
-        let selected = [];
-
-        for (let i = 0 ; i < nbHira; i++){
-
-            if(filtered.length > 0){
-
-                const randomIndex = Math.floor(Math.random() * filtered.length);
-
-                selected.push(filtered[randomIndex])
-                filtered.splice(randomIndex, 1)
-            } else {
-
-                const randomIndex = Math.floor(Math.random() * hiraAllWithProgress.length);
-
-                selected.push(hiraAllWithProgress[randomIndex])
-                hiraAllWithProgress.splice(randomIndex, 1)
-            }
-            
-        }
-
-
-// console.log("step5 good")
-// console.log("selected", selected.length)
-
-        return res.json(selected)
-
-    } catch(error) {
-        
-        return res.json(error)
-    }
-}
-
 })
 
-router.post("/OnlyViewedCard", async (req, res) => {
-
- // ajout token plus tard
- if (!checkBody(req.body, ["id", "password"])) {
-    res.json({ result: false, error: "Missing or empty fields" });
-    return;
-}
-    
-    const nbKata = Number(req.body.NbByCursorKata) // Choix du nb de kata par le curseur
-    const nbHira = Number(req.body.NbByCursorHira) // Nb
-    
-    const NewBatchKata = req.body.needNewBatchKata // Nouveau lot de cartes?
-    const NewBatchHira = req.body.needNewBatchHira // Booléen
-    
-    const onlyViewedKata = req.body.onlyViewedKata // Cartes déjà vu?
-    const onlyViewedHira = req.body.onlyViewedHira // Booléen
-
-    
-// Viewed Kata Ok
-    if (req.body.NbByCursorKata && onlyViewedKata === "true" && !isNaN(nbKata) && NewBatchKata) {
-        try {
-
-            // Chargé User et populate le progress dans User
-            let user = await User.findById({_id: req.body.id})
-            .populate("katakanaProgress")
-
-
-            // 
-            let kataAll = await Katakana.find();
-            let kataProgList = user.katakanaProgress;
-
-            // fusion kataAll et kataProgress par un map
-            let kataAllWithProgress = kataAll.map(kata => {
-                // p = 1 kataProgress de user
-                let prog = kataProgList.find(p => p.katakanaId.toString() === kata._id.toString());
-                return {
-                    ...kata.toObject(),
-                    progression: prog || null
-                };
-            })
-
-// console.log("step3 good")
-// console.log("progression", kataAllWithProgress[0].progression.nbViews)
-
-            let moy = kataAllWithProgress.reduce((acc, value) => value.progression.nbViews + acc,0)/kataAllWithProgress.length
-
-            let filtered = kataAllWithProgress.filter(e =>  { return e.progression.nbViews > 0})
-            filtered && filtered.length > nbKata ? null : filtered = kataAllWithProgress.filter(e =>  { return e.progression.nbViews >= moy})
-
-
-// console.log(kataAllWithProgress)
-// console.log(moy)
-console.log("step4 good")
-console.log("filtered", filtered.length)
-
-
-            //  
-            let selected = [];
-
-            for (let i = 0 ; i < nbKata; i++){
-
-                if(filtered.length > 0){
-
-                    const randomIndex = Math.floor(Math.random() * filtered.length);
-
-                    selected.push(filtered[randomIndex])
-                    filtered.splice(randomIndex, 1)
-                } else {
-
-                    const randomIndex = Math.floor(Math.random() * kataAllWithProgress.length);
-
-                    selected.push(kataAllWithProgress[randomIndex])
-                    kataAllWithProgress.splice(randomIndex, 1)
-                }
-            }
-
-
-console.log("step5 good")
-console.log("selected", selected.length)
-
-            return res.json(selected)
-
-        } catch(error) {
-            
-            return res.json({error: error, result: false})
-        }
-    }
-
-// Viewed Hira
-    else if(req.body.NbByCursorHira && onlyViewedHira === "true" && !isNaN(nbHira)&& NewBatchHira){
-        try {
-
-            // Chargé User et populate le progress dans User
-            let user = await User.findById({_id: req.body.id})
-            .populate("hiraganaProgress")
-
-
-            // 
-            let hiraAll = await Hiragana.find();
-            let hiraProgList = user.hiraganaProgress;
-
-            // fusion hiraAll et hiraProgress par un map
-            let hiraAllWithProgress = hiraAll.map(hira => {
-                // p = 1 hiraProgress de user
-                let prog = hiraProgList.find(p => p.hiraganaId.toString() === hira._id.toString());
-                return {
-                    ...hira.toObject(),
-                    progression: prog || null
-                };
-            })
-
-// console.log("step3 good")
-// console.log("progression", hiraAllWithProgress[0].progression.nbViews)
-
-            let moy = hiraAllWithProgress.reduce((acc, value) => value.progression.nbViews + acc,0)/hiraAllWithProgress.length
-
-            let filtered = hiraAllWithProgress.filter(e =>  { return e.progression.nbViews > 0})
-            filtered && filtered.length > nbHira ? null : filtered = hiraAllWithProgress.filter(e =>  { return e.progression.nbViews >= moy})
-
-
-// console.log(hiraAllWithProgress)
-// console.log(moy)
-// console.log("step4 good")
-// console.log("filtered", filtered.length)
-
-
-            //  
-            let selected = [];
-
-            for (let i = 0 ; i < nbHira; i++){
-
-                if(filtered.length > 0){
-
-                    const randomIndex = Math.floor(Math.random() * filtered.length);
-
-                    selected.push(filtered[randomIndex])
-                    filtered.splice(randomIndex, 1)
-                } else {
-
-                    const randomIndex = Math.floor(Math.random() * hiraAllWithProgress.length);
-
-                    selected.push(hiraAllWithProgress[randomIndex])
-                    hiraAllWithProgress.splice(randomIndex, 1)
-                }
-            }
-
-
-// console.log("step5 good")
-// console.log("selected", selected.length)
-
-            return res.json(selected)
-
-        } catch(error) {
-            
-            return res.json({error: error, result: false})
-        }
-    }
-    
-})
-
-router.post("/Viewed&Unviewed", async (req, res) =>{
-
-    // ajout token plus tard
-    if (!checkBody(req.body, ["id", "password"])) {
-        res.json({ result: false, error: "Missing or empty fields" });
-        return;
-    }
-
-    const nbKata = Number(req.body.NbByCursorKata)
-    const nbHira = Number(req.body.NbByCursorHira)
-    
-    const NewBatchKata = req.body.needNewBatchKata
-    const NewBatchHira = req.body.needNewBatchHira
-    
-
-
-    // Kata
-    if (req.body.NbByCursorKata && !isNaN(nbKata) && NewBatchKata) {
-        try {
-            let user = await User.findById({_id: req.body.id})
-            .populate("katakanaProgress")
-
-            let kataAll = await Katakana.find();
-            let kataProgList = user.katakanaProgress;
-
-
-            // fusion kataAll et kataProgress par un map
-            let kataAllWithProgress = kataAll.map(kata => {
-                // p = 1 kataProgress de user
-                let prog = kataProgList.find(p => p.katakanaId.toString() === kata._id.toString());
-                return {
-                    ...kata.toObject(),
-                    progression: prog || null
-                };
-            })
-
-            let selected = [];
-                // 
-            for (let i = 0  ; i < nbKata && kataAllWithProgress.length > 0 ; i++){
-
-                const randomIndex = Math.floor(Math.random() * kataAllWithProgress.length);
-
-                selected.push(kataAllWithProgress[randomIndex])
-                kataAllWithProgress.splice(randomIndex, 1)
-            }
-
-            return res.json(selected)
-        } catch(error) {
-            return res.json(error)
-        }}
-
-
-        // Hira
-    else if (req.body.NbByCursorHira && !isNaN(nbHira) && NewBatchHira) {
-        try {
-
-            let user = await User.findById({_id: req.body.id})
-            .populate("hiraganaProgress")
-
-            let hiraAll = await Hiragana.find();
-            let hiraProgList = user.hiraganaProgress;
-
-            // fusion hiraAll et hiraProgress
-            let hiraAllWithProgress = hiraAll.map(hira => {
-                // p = 1 hiraProgress de user
-                let prog = hiraProgList.find(p => p.hiraganaId.toString() === hira._id.toString());
-                return {
-                    ...hira.toObject(),
-                    progression: prog || null
-                };
-            })
-
-            let selected = [];
-
-            for (let i = 0  ; i < nbHira && hiraAllWithProgress.length > 0 ; i++){
-                const randomIndex = Math.floor(Math.random() * hiraAllWithProgress.length);
-                selected.push(hiraAllWithProgress[randomIndex])
-                hiraAllWithProgress.splice(randomIndex, 1)
-            }
-            return res.json(selected)
-        } catch(error) {
-            return res.json(error)
-    }}
-
-    res.json({result: false})
-})
 
 
 
