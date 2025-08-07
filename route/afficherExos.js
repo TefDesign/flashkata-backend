@@ -10,15 +10,9 @@ const HiraganaProgress = require("../models/HiraganaProgress");
 const { checkBody } = require("../modules/checkBody");
 
 
-
-
-
-
 router.post("/UnviewedCard", async (req, res) =>{
 
-
-
-    // ajout token plus tard
+         // ajout token plus tard
     if (!checkBody(req.body, ["id", "password"])) {
         res.json({ result: false, error: "Missing or empty fields" });
         return;
@@ -33,12 +27,16 @@ router.post("/UnviewedCard", async (req, res) =>{
     const onlyViewedKata = req.body.onlyViewedKata // Cartes déjà vu?
     const onlyViewedHira = req.body.onlyViewedHira // Booléen
 
-
+// If unviewed Kata ok
     if (req.body.NbByCursorKata && onlyViewedKata === "false" && !isNaN(nbKata)) {
         try {
+
+            // Chargé User et populate le progress dans User
             let user = await User.findById({_id: req.body.id})
             .populate("katakanaProgress")
 
+
+            // 
             let kataAll = await Katakana.find();
             let kataProgList = user.katakanaProgress;
 
@@ -51,20 +49,25 @@ router.post("/UnviewedCard", async (req, res) =>{
                     progression: prog || null
                 };
             })
+
 console.log("step3 good")
 console.log("progression", kataAllWithProgress[0].progression.nbViews)
+
 
             let filtered = []
 
             const KataProgressByUnviewed = kataAllWithProgress.filter(e =>  { return e.progression.nbViews <= 0})
             filtered.push(...KataProgressByUnviewed)
 
+
 console.log("step4 good")
 console.log("filtered", filtered.length)
 
+
+            //  
             let selected = [];
-                // 
-            for (let i = 0  ; i < nbKata && filtered.length > 0 ; i++){
+
+            for (let i = 0 ; i < nbKata && filtered.length > 0; i++){
 
                 const randomIndex = Math.floor(Math.random() * filtered.length);
 
@@ -72,14 +75,24 @@ console.log("filtered", filtered.length)
                 filtered.splice(randomIndex, 1)
             }
 
+
 console.log("step5 good")
 console.log("selected", selected.length)
 
             return res.json(selected)
+
         } catch(error) {
+            
             return res.json(error)
         }
     }
+
+// Else If unviewed Hira not ok
+    else if(req.body.onlyViewedHira && onlyViewedHira === "false" && !isNaN(nbHira)){
+
+    }
+
+
 
 })
 
