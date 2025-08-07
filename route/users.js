@@ -11,6 +11,20 @@ const { checkBody } = require("../modules/checkBody");
 const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
 
+const challengeModel = {
+          "1min": 0,
+          "2min": 0,
+          "3min": 0,
+          "4min": 0,
+          "5min": 0,
+          "6min": 0,
+          "7min": 0,
+          "8min": 0,
+          "9min": 0,
+          "10min": 0,
+        }
+
+
 router.post("/signup", async (req, res) => {
   if (!checkBody(req.body, ["username", "password", "email"])) {
     res.json({ result: false, error: "Missing or empty fields" });
@@ -32,42 +46,9 @@ router.post("/signup", async (req, res) => {
         lastName: req.body.lastName,
         email: req.body.email,
         hasTuto: req.body.hasTuto,
-        hiraganaChallenge: {
-          "1min": 0,
-          "2min": 0,
-          "3min": 0,
-          "4min": 0,
-          "5min": 0,
-          "6min": 0,
-          "7min": 0,
-          "8min": 0,
-          "9min": 0,
-          "10min": 0,
-        },
-        katakanaChallenge: {
-          "1min": 0,
-          "2min": 0,
-          "3min": 0,
-          "4min": 0,
-          "5min": 0,
-          "6min": 0,
-          "7min": 0,
-          "8min": 0,
-          "9min": 0,
-          "10min": 0,
-        },
-        AllChallenge: {
-          "1min": 0,
-          "2min": 0,
-          "3min": 0,
-          "4min": 0,
-          "5min": 0,
-          "6min": 0,
-          "7min": 0,
-          "8min": 0,
-          "9min": 0,
-          "10min": 0,
-        },
+        hiraganaChallenge: challengeModel,
+        katakanaChallenge: challengeModel,
+        AllChallenge: challengeModel,
       });
       console.log("user crée");
 
@@ -129,7 +110,8 @@ router.post("/signup", async (req, res) => {
       res.json({ result: false, error: "User already exists" });
     }
   } catch (error) {
-    console.log("Coucou c'est làa", error);
+    console.log("error", error);
+    res.json({error : error})
   }
 });
 
