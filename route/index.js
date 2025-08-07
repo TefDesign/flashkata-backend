@@ -2,8 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Katakana = require("../models/Katakana");
 const Hiragana = require("../models/Hiragana");
-const katakanaProgress = require("../models/KatakanaProgress");
-const hiraganaProgress = require("../models/HiraganaProgress");
 const uid2 = require("uid2");
 
 router.post("/kataGen", async (req, res) => {
