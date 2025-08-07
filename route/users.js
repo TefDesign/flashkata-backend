@@ -11,19 +11,29 @@ const { checkBody } = require("../modules/checkBody");
 const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
 
-const challengeModel = {
-          "1min": 0,
-          "2min": 0,
-          "3min": 0,
-          "4min": 0,
-          "5min": 0,
-          "6min": 0,
-          "7min": 0,
-          "8min": 0,
-          "9min": 0,
-          "10min": 0,
-        }
 
+const challengeModel = {
+  "1min": 0,
+  "2min": 0,
+  "3min": 0,
+  "4min": 0,
+  "5min": 0,
+  "6min": 0,
+  "7min": 0,
+  "8min": 0,
+  "9min": 0,
+  "10min": 0,
+};
+
+router.get('/getUser/:id/:token', async(req, res) => {
+  try {
+  const user = await User.findById({_id : req.params.id})
+
+  res.json(req.params.token === user.token ? {result : true, user : user} : {result : false, error : 'invalid token'})
+  } catch (error) {
+    res.json({error : error})
+  }
+})
 
 router.post("/signup", async (req, res) => {
   if (!checkBody(req.body, ["username", "password", "email"])) {
@@ -35,26 +45,26 @@ router.post("/signup", async (req, res) => {
 
     const data = await User.findOne({ email: req.body.email });
     if (data === null) {
-      const hash = bcrypt.hashSync(req.body.password, 10);
 
       let newUser = await new User({
         userName: req.body.username,
-        password: hash,
+        password: bcrypt.hashSync(req.body.password, 10),
         token: uid2(32),
-        avatar: req.body.avater,
-        firstName: req.body.user,
-        lastName: req.body.lastName,
+        avatar: req.body.avatar ? req.body.avatar : '',
+        firstName: req.body.firstName ? req.body.firstName : '',
+        lastName: req.body.lastName ? req.body.lastName : '',
         email: req.body.email,
-        hasTuto: req.body.hasTuto,
+        hasTuto: false,
         hiraganaChallenge: challengeModel,
         katakanaChallenge: challengeModel,
         AllChallenge: challengeModel,
       });
       console.log("user crée");
 
-      const kata = await Katakana.find({});
-      let kataProgress = [];
 
+      let kataProgress = [];
+      const kata = await Katakana.find({});
+    
       for (let i = 0; i < kata.length; i++) {
         const newKata = await new katakanaProgress({
           katakanaId: kata[i]._id,
@@ -67,14 +77,15 @@ router.post("/signup", async (req, res) => {
           nbCorrect: 0,
           nbWrong: 0,
           isFavorite: false,
-          priority : 1
+          priority: 1,
         }).save();
         kataProgress = [...kataProgress, newKata._id];
       }
       console.log("kata crée");
 
+
+      let hiraProgress = [];      
       const hira = await Hiragana.find({});
-      let hiraProgress = [];
 
       for (let i = 0; i < hira.length; i++) {
         const newHira = await new hiraganaProgress({
@@ -88,10 +99,11 @@ router.post("/signup", async (req, res) => {
           nbCorrect: 0,
           nbWrong: 0,
           isFavorite: false,
-          priority: 1
+          priority: 1,
         }).save();
         hiraProgress = [...hiraProgress, newHira._id];
       }
+
       console.log("hira crée");
 
       newUser.hiraganaProgress = hiraProgress;
@@ -104,37 +116,75 @@ router.post("/signup", async (req, res) => {
       res.json({
         result: true,
         token: newUser.token,
-        userName: newUser.userName,
+        username: newUser.userName,
+        id: newUser._id,
+        isConnected: true,
       });
     } else {
       res.json({ result: false, error: "User already exists" });
     }
   } catch (error) {
     console.log("error", error);
-    res.json({error : error})
+    res.json({ error: error });
   }
 });
 
-
-router.post("/signin", async(req, res) => {
+router.post("/signin", async (req, res) => {
   if (!checkBody(req.body, ["password", "email"])) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
   }
 
-  const user = await User.findOne({ email: req.body.email })
+  const user = await User.findOne({ email: req.body.email });
 
-    if (user && bcrypt.compareSync(req.body.password, user.password)) {
-      res.json({
-        result: true,
-        token: user.token,
-        username: user.username,
-        id : user._id,
-        isConnected: true,
-    })
-    } else {
-      res.json(user ? { result: false, error: "wrong password" } :  { result: false, error: "user not found" })
-    }
+  if (user && bcrypt.compareSync(req.body.password, user.password)) {
+    res.json({
+      result: true,
+      token: user.token,
+      username: user.userName,
+      id: user._id,
+      isConnected: true,
+    });
+  } else {
+    res.json(
+      user
+        ? { result: false, error: "wrong password" }
+        : { result: false, error: "user not found" }
+    );
+  }
 });
+
+// route de modification de l'utilisateur
+router.patch("/modify", async (req, res) => {
+  if (!checkBody(req.body, ["token", "id"])) {
+    res.json({ result: false, error: "Missing or empty fields" });
+    return;
+  }
+
+  const user = await User.findById({ _id: req.body.id });
+  try {
+    // verification du token
+    if (req.body.token !== user.token) {
+      res.json({ result: false, error: "invalid token" });
+      return;
+    }
+    req.body.userName ? (user.userName = req.body.username) : null;
+    req.body.password
+      ? (user.password = bcrypt.hashSync(req.body.password, 10))
+      : null;
+    req.body.avatar ? (user.avatar = req.body.avatar) : null;
+    req.body.firstName ? (user.firstName = req.body.firstName) : null;
+    req.body.lastName ? (user.lastName = req.body.lastName) : null;
+    req.body.email ? (user.email = req.body.email) : null;
+    req.body.hasTuto ? (user.hasTuto = req.body.hasTuto) : null;
+
+    user.save();
+    res.json({ result: true, user: user });
+  } catch (error) {
+    res.json({ result: false, error: error });
+  }
+});
+
+
 
 module.exports = router;
