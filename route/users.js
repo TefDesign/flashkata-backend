@@ -41,7 +41,7 @@ const createProgress = async ({ list, userId, ProgressModel, idField }) => {
       nbCorrect: 0,
       nbWrong: 0,
       isFavorite: false,
-      priority: 1,
+      priority: 0.5,
     }).save();
 
     progressIds.push(newProgress._id);
