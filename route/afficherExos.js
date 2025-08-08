@@ -16,7 +16,7 @@ function filter (filterType, moy, kataAllWithProgress, nbCursor) {
 
     
     let filtered;
-   
+
     if (filterType === "neverViewed"){
 
     filtered = kataAllWithProgress.filter(e =>  { return e.progression.nbViews <= 0})
@@ -58,6 +58,7 @@ if (!checkBody(req.body, ["id", "token"])) {
     return;
 }
     const nbCursor = Number(req.body.NbByCursor) // Choix du nb de kata par le curseur
+    //  ==== slider
 
 // Unviewed Kata Ok
         try {
