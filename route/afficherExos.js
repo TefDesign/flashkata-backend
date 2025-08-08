@@ -10,7 +10,6 @@ const HiraganaProgress = require("../models/HiraganaProgress");
 const { checkBody } = require("../modules/checkBody");
 
 
-
 function filter(filterType, list, nbSlider) {
 
     let averageView = list.reduce((acc, value) => value.nbViews + acc, 0) / list.length
@@ -38,8 +37,6 @@ function filter(filterType, list, nbSlider) {
         return filtered
     }
 }
-
-
 
 
 
@@ -133,8 +130,6 @@ router.post("/giveMeSomeCards", async (req, res) => {
         return res.json({result : false , error : error})
     }
 })
-
-
 
 
 
