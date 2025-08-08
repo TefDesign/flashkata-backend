@@ -9,7 +9,7 @@ const KatakanaProgress = require("../models/KatakanaProgress");
 const HiraganaProgress = require("../models/HiraganaProgress");
 const { checkBody } = require("../modules/checkBody");
 
-
+// fonction pour filtrer les cartes en fonction du type de filtre et de leurs priorités
 function filter(filterType, list, nbSlider) {
 
     let averageView = list.reduce((acc, value) => value.nbViews + acc, 0) / list.length
@@ -88,15 +88,8 @@ router.post("/giveMeSomeCards", async (req, res) => {
             list = [...list, ...user.hiraganaProgress]
         }
 
-        console.log("step3 good", list.length)
-
-
         // on filtre la liste en fonction du type de filtre demandé
         let filtered = filter(filterType, list, nbSlider);
-
-
-        console.log("step4 good")
-        console.log("filtered", filtered.length)
 
 
         //  selection des cartes
@@ -119,10 +112,6 @@ router.post("/giveMeSomeCards", async (req, res) => {
             }
         }
 
-
-        console.log("step5 good", selected.length)
-        // console.log("selected", selected.length)
-
         // on retourne la liste des kata selected sans leurs progression
         return res.json({ result: true, data: req.body.dev ? selected : selected.map(select => select.hiraganaId || select.katakanaId )})
 
@@ -130,9 +119,5 @@ router.post("/giveMeSomeCards", async (req, res) => {
         return res.json({result : false , error : error})
     }
 })
-
-
-
-
 
 module.exports = router;
