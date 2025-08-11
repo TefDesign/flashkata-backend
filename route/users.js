@@ -55,6 +55,7 @@ router.get("/getUser/:id/:token", async (req, res) => {
   try {
     const user = await User.findById({ _id: req.params.id });
 
+    
     // verification du token avant la réponse
     res.json(
       req.params.token === user.token
@@ -68,16 +69,20 @@ router.get("/getUser/:id/:token", async (req, res) => {
 
 // route pour l'inscription
 router.post("/signup", async (req, res) => {
-  if (!checkBody(req.body, ["username", "password", "email"])) {
+  if (!checkBody(req.body, ["userName", "password", "email"])) {
     res.json({ result: false, error: "Missing or empty fields" });
     return;
   }
   try {
+
+
+    
+     console.log('debut de route')
     const data = await User.findOne({ email: req.body.email });
     if (data === null) {
       // creation d'un utilisateur
       let newUser = await new User({
-        userName: req.body.username,
+        userName: req.body.userName,
         password: bcrypt.hashSync(req.body.password, 10),
         token: uid2(32),
         avatar: req.body.avatar ? req.body.avatar : "",
@@ -90,6 +95,7 @@ router.post("/signup", async (req, res) => {
         AllChallenge: challengeModel,
       });
 
+      console.log('user creation ok')
       // on cherche la liste des katakana et on boucle pour créer une liste de katakana progress
       const katakanaList = await Katakana.find({});
       const kataProgress = await createProgress({
@@ -107,18 +113,20 @@ router.post("/signup", async (req, res) => {
         ProgressModel: hiraganaProgress,
         idField: "hiraganaId",
       });
+      console.log('creation progress ok')
 
       // on ajoute les listes de progress dans l'utilisateur
       newUser.hiraganaProgress = hiraProgress;
       newUser.katakanaProgress = kataProgress;
 
       // on sauvegarde l'utilisateur
-      newUser.save();
+      await newUser.save();
+      console.log('savegarde user en bd')
 
       res.json({
         result: true,
         token: newUser.token,
-        username: newUser.userName,
+        userName: newUser.userName,
         id: newUser._id,
         isConnected: true,
         user: newUser,
@@ -128,7 +136,7 @@ router.post("/signup", async (req, res) => {
     }
   } catch (error) {
     console.log("error", error);
-    res.json({ error: error });
+    res.json({ result : false , error: error });
   }
 });
 
@@ -139,10 +147,13 @@ router.post("/signin", async (req, res) => {
     return;
   }
 
-  const user = await User.findOne({ email: req.body.email });
+   const { email, password } = req.body
+
+  const user = await User.findOne({ email: email });
+
 
   // verification de l'utilisateur et du mot de passe
-  if (user && bcrypt.compareSync(req.body.password, user.password)) {
+  if (user && bcrypt.compareSync(password, user.password)) {
     res.json({
       result: true,
       token: user.token,
@@ -162,9 +173,11 @@ router.post("/signin", async (req, res) => {
 // route de modification de l'utilisateur
 router.patch("/modify", async (req, res) => {
   if (!checkBody(req.body, ["token", "id"])) {
-    res.json({ result: false, error: "Missing or empty fields" });
+    res.json({ result: false, message: "Champs manquants ou vides" , error: "Missing or empty fields" });
     return;
   }
+
+ 
 
   const user = await User.findById({ _id: req.body.id });
   try {
@@ -183,7 +196,8 @@ router.patch("/modify", async (req, res) => {
     req.body.email ? (user.email = req.body.email) : null;
     req.body.hasTuto ? (user.hasTuto = req.body.hasTuto) : null;
 
-    user.save();
+    await user.save();
+    
     res.json({ result: true, user: user });
   } catch (error) {
     res.json({ result: false, error: error });

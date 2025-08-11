@@ -20,23 +20,25 @@ const findKataType = (req) => {
 
 
 // route pour trouver l'ensemble des Kata progresse d'un user, trié par type (si pas katakana dans type, renverra la liste des hiragana)
-router.get('/userProgress/:token/:userId/:type', async (req, res) => {
+router.get('/userProgress/:token/:id/:type', async (req, res) => {
       try {
+
+        const { type, token, id} = req.params
         
-      const user = await User.findById({ _id: req.params.userId }).populate({
-        path: req.params.type === "katakana" ? "katakanaProgress" : "hiraganaProgress",
+      const user = await User.findById({ _id: id }).populate({
+        path: type === "katakana" ? "katakanaProgress" : "hiraganaProgress",
         populate: {
-            path: req.params.type === "katakana" ? 'katakanaId' : "hiraganaId",
-            model: req.params.type === "katakana" ?  'Katakana' : "Hiragana"
+            path: type === "katakana" ? 'katakanaId' : "hiraganaId",
+            model: type === "katakana" ?  'Katakana' : "Hiragana"
        }})
        
-        const progress = user[req.params.type === "katakana" ? "katakanaProgress" : "hiraganaProgress"]
+        const progress = user[type === "katakana" ? "katakanaProgress" : "hiraganaProgress"]
 
 
-      res.json(response(user.token, req.params.token, progress))
+      res.json(response(user.token, token, progress))
 
   } catch (error) {
-    res.json(error)
+    res.json({message : "erreur de récuperation de la liste des progrès", error})
   }
 })
 
@@ -44,7 +46,7 @@ router.get('/userProgress/:token/:userId/:type', async (req, res) => {
 router.post('/kataProgress', async (req, res) => {
       try {
           if (!checkBody(req.body, ["userId", "token"])) {
-            res.json({ result: false, error: "Missing or empty fields" });
+            res.json({ result: false, message: "Champs manquants ou vides" , error: "Missing or empty fields" });
            return;
           }
 
@@ -75,7 +77,7 @@ router.patch('/kataProgress/modify', async (req, res) => {
 
           //  vérification du token en amont de la réponse pour éviter la modification
           if(kataProgress.userId.token !== req.body.token) {
-            res.json({result : false, error : "invalid token"})
+            res.json({result : false, message : "erreur de token", error : "invalid token"})
             return
           }
     
@@ -84,7 +86,7 @@ router.patch('/kataProgress/modify', async (req, res) => {
          // fonction pour s'assurer que la valeur ajoutée est bien un array, sinon il transforme la nouvelle valeur en array, ensuite on fusionne les deux arrays en un seul
          const arrayMerger = (oldArray, newArray) => {
           const newValArray = Array.isArray(newArray) ? newArray : [newArray]
-          return [...oldArray, ...newArray]
+          return [...oldArray, ...newValArray]
          }
 
          // modification du document trouvé
@@ -109,7 +111,7 @@ router.patch('/kataProgress/modify', async (req, res) => {
         
 
   } catch (error) {
-    res.json({result : false, error : error})
+    res.json({result : false, message: 'erreur inconu', error : error})
   }
 })
 

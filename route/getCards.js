@@ -10,7 +10,7 @@ const HiraganaProgress = require("../models/HiraganaProgress");
 const { checkBody } = require("../modules/checkBody");
 
 // fonction pour filtrer les cartes en fonction du type de filtre et de leurs priorités
-function filter(filterType, list, nbSlider) {
+function filter(filterType, list, nbSlider, isDevMode) {
 
     let averageView = list.reduce((acc, value) => value.nbViews + acc, 0) / list.length
     let filtered;
@@ -40,24 +40,23 @@ function filter(filterType, list, nbSlider) {
 
 
 
-router.post("/giveMeSomeCards", async (req, res) => {
+router.post("/getCards", async (req, res) => {
 
+    const { nbSlider, kataType, filterType, id, token} = req.body
      
     // ajout token plus tard
     if (!checkBody(req.body, ["id", "token"])) {
-        res.json({ result: false, error: "Missing or empty fields" });
+        res.json({ result: false, message: "Champs manquants ou vides" , error: "Missing or empty fields" });
         return;
     }
-    const nbSlider = Number(req.body.nbSlider) // Choix du nb de kata par le slider
+    
 
     // Unviewed Kata Ok
     try {
 
-        const kataType = req.body.kataType
-        const filterType = req.body.filterType
 
         // on charge user et on populate les kataProgress selon la demande, qu'on populate a leurs tours des kata correspondants
-        let user = await User.findById({ _id: req.body.id })
+        let user = await User.findById({ _id: id })
             kataType === "hiragana" || kataType === "all" ? await user.populate({
                 path: "hiraganaProgress",
                 populate: {
@@ -74,8 +73,8 @@ router.post("/giveMeSomeCards", async (req, res) => {
             }) : null
 
         // verification du token
-         if (user.token !== req.body.token) {
-            res.json({ result: false, error: "token invalide" });
+         if (user.token !== token) {
+            res.json({ result: false, message: "token invalide" ,error: "token invalide" });
             return
         }
 
@@ -113,10 +112,10 @@ router.post("/giveMeSomeCards", async (req, res) => {
         }
 
         // on retourne la liste des kata selected sans leurs progression
-        return res.json({ result: true, data: req.body.dev ? selected : selected.map(select => select.hiraganaId || select.katakanaId )})
+        return res.json({ result: true, data: isDevMode ? selected : selected.map(select => select.hiraganaId || select.katakanaId )})
 
     } catch (error) {
-        return res.json({result : false , error : error})
+        return res.json({result : false , message : "erreur lors de la récuperation des kata" , error : error})
     }
 })
 
