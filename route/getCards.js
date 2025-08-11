@@ -10,7 +10,7 @@ const HiraganaProgress = require("../models/HiraganaProgress");
 const { checkBody } = require("../modules/checkBody");
 
 // fonction pour filtrer les cartes en fonction du type de filtre et de leurs priorités
-function filter(filterType, list, nbSlider, isDevMode) {
+function filter(filterType, list, nbSlider) {
 
     let averageView = list.reduce((acc, value) => value.nbViews + acc, 0) / list.length
     let filtered;
@@ -42,7 +42,7 @@ function filter(filterType, list, nbSlider, isDevMode) {
 
 router.post("/getCards", async (req, res) => {
 
-    const { nbSlider, kataType, filterType, id, token} = req.body
+    const { nbSlider, kataType, filterType, id, token, isDevMode} = req.body
      
     // ajout token plus tard
     if (!checkBody(req.body, ["id", "token"])) {
