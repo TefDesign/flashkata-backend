@@ -70,7 +70,7 @@ router.get("/getUser/:id/:token", async (req, res) => {
 // route pour l'inscription
 router.post("/signup", async (req, res) => {
   if (!checkBody(req.body, ["userName", "password", "email"])) {
-    res.json({ result: false, error: "Missing or empty fields" });
+    res.json({ result: false, message: "Champs manquants ou vides", error: "Missing or empty fields" });
     return;
   }
   try {
@@ -132,7 +132,7 @@ router.post("/signup", async (req, res) => {
         user: newUser,
       });
     } else {
-      res.json({ result: false, error: "User already exists" });
+      res.json({ result: false, message: "l'utilisateur n'éxite pas" ,error: "User already exists" });
     }
   } catch (error) {
     console.log("error", error);
@@ -143,7 +143,7 @@ router.post("/signup", async (req, res) => {
 // route pour la connexion
 router.post("/signin", async (req, res) => {
   if (!checkBody(req.body, ["password", "email"])) {
-    res.json({ result: false, error: "Missing or empty fields" });
+    res.json({ result: false, message: "Champs manquants ou vides", error: "Missing or empty fields" });
     return;
   }
 
@@ -183,7 +183,7 @@ router.patch("/modify", async (req, res) => {
   try {
     // verification du token
     if (req.body.token !== user.token) {
-      res.json({ result: false, error: "invalid token" });
+      res.json({ result: false, messgae: "token invalid", error: "invalid token" });
       return;
     }
     req.body.userName ? (user.userName = req.body.username) : null;

@@ -58,7 +58,7 @@ router.post('/kataProgress', async (req, res) => {
         res.json(response(kataProgress.userId.token, req.body.token, kataProgress))
 
   } catch (error) {
-    res.json(error)
+    res.json({error : error, message: "erreur inconnu"})
   }
 })
 
