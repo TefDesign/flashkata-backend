@@ -27,7 +27,7 @@ const afficherExosRouter = require('./route/getCards')
 app.use('/', indexRouter);
 app.use("/users", usersRouter);
 app.use('/progress', progressRouter);
-app.use('/afficherExos', afficherExosRouter)
+app.use('/cards', afficherExosRouter)
 
 
 
