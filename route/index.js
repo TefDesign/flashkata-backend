@@ -4,27 +4,41 @@ const Katakana = require("../models/Katakana");
 const Hiragana = require("../models/Hiragana");
 const uid2 = require("uid2");
 
+
+const kataNames = [
+  'a', 'i', 'u', 'e', 'o',
+  'ka', 'ki', 'ku', 'ke', 'ko',
+  'sa', 'shi', 'su', 'se', 'so',
+  'ta', 'chi', 'tsu', 'te', 'to',
+  'na', 'ni', 'nu', 'ne', 'no',
+  'ha', 'hi', 'fu', 'he', 'ho',
+  'ma', 'mi', 'mu', 'me', 'mo',
+  'ya', 'yu', 'yo',
+  'ra', 'ri', 'ru', 're', 'ro',
+  'wa', 'wo', 'n'
+];
+
+
+
+// créer la liste des kata en bd, commande en dev pas en prod
 router.post("/kataGen", async (req, res) => {
-  for (let i = 0; i < 100; i++) {
-    const kata = await new Katakana({
-      name: uid2(10),
-      image: "req.body.image",
-      placeholder: "req.body.placeholder",
-      sound: "req.body.sound",
-    }).save();
-    const hira = await new Hiragana({
-      name: uid2(10),
-      image: "req.body.image",
-      placeholder: "req.body.placeholder",
-      sound: "req.body.sound",
-    }).save();
+  try {
+    for (let i = 0; i < kataNames.length; i++) {
+      const kata = await new Katakana({
+        name: kataNames[i],
+      }).save();
+      const hira = await new Hiragana({
+        name: kataNames[i],
+  
+      }).save();
+    }
+    res.json({ result: true });
+    
+  } catch (error) {
+    res.json({error : error, message: "erreur d'enregistrement des katas"})
   }
-  res.json({ result: true });
 });
 
-router.get("/", (req, res) => {
-  res.json("kata!!!!");
-});
 
 router.get("/katakana", async (req, res) => {
   const resp = await Katakana.find({});
@@ -34,26 +48,6 @@ router.get("/katakana", async (req, res) => {
 router.get("/hiragana", async (req, res) => {
   const resp = await Hiragana.find({});
   res.json(resp);
-});
-
-router.post("/addKatakana", async (req, res) => {
-  const resp = await new Katakana({
-    name: req.body.name,
-    image: req.body.image,
-    placeholder: req.body.placeholder,
-    sound: req.body.sound,
-  }).save();
-  res.json({ result: "katakana enregistré" });
-});
-
-router.post("/addHiragana", async (req, res) => {
-  const resp = await new Hiragana({
-    name: req.body.name,
-    image: req.body.image,
-    placeholder: req.body.placeholder,
-    sound: req.body.sound,
-  }).save();
-  res.json({ result: "hiragana enregistré" });
 });
 
 module.exports = router;

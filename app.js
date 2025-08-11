@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 const indexRouter = require('./route/index');
 const usersRouter = require('./route/users');
 const progressRouter = require('./route/progress');
-const afficherExosRouter = require('./route/afficherExos')
+const afficherExosRouter = require('./route/getCards')
 
 
 
@@ -33,7 +33,9 @@ app.use('/afficherExos', afficherExosRouter)
 
 
 app.listen(port, () => {
-    console.log(`KATAAA lancé sur http://localhost:${port}`);
+    console.log(`serveur lancé sur http://localhost:${port}`);
 });
+
+
 
 module.exports = app;
