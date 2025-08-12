@@ -45,7 +45,7 @@ describe("Route POST /users/signin", () => {
 
     expect(response.body.result).toBe(true);
     expect(response.body.token).toBe("mockToken123");
-    expect(response.body.username).toBe("testuser");
+    expect(response.body.userName).toBe("testuser");
     expect(response.body.id).toBe("mockUserId123");
     expect(response.body.isConnected).toBe(true);
   });
