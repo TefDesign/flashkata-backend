@@ -157,7 +157,7 @@ router.post("/signin", async (req, res) => {
     res.json({
       result: true,
       token: user.token,
-      username: user.userName,
+      userName: user.userName,
       id: user._id,
       isConnected: true,
     });
