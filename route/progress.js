@@ -65,6 +65,7 @@ router.post('/kataProgress', async (req, res) => {
 // route de modification d'un KataProgress
 router.patch('/kataProgress/modify', async (req, res) => {
   try {
+    console.log('debug route')
         if (!checkBody(req.body, ["userId", "token"])) {
             res.json({ result: false, error: "Missing or empty fields" });
            return;
@@ -81,8 +82,6 @@ router.patch('/kataProgress/modify', async (req, res) => {
             return
           }
     
-         console.log(kataProgress)
-
          // fonction pour s'assurer que la valeur ajoutée est bien un array, sinon il transforme la nouvelle valeur en array, ensuite on fusionne les deux arrays en un seul
          const arrayMerger = (oldArray, newArray) => {
           const newValArray = Array.isArray(newArray) ? newArray : [newArray]
@@ -100,12 +99,14 @@ router.patch('/kataProgress/modify', async (req, res) => {
 
             kataProgress.nbCorrect = req.body.nbCorrect ? kataProgress.nbCorrect + Number(req.body.nbCorrect) : kataProgress.nbCorrect;
             kataProgress.nbWrong = req.body.nbWrong ? kataProgress.nbWrong + Number(req.body.nbWrong) : kataProgress.nbWrong;
-            kataProgress.isFavorite = req.body.isFavorite ? req.body.isFavorite : kataProgress.isFavorite;
+            kataProgress.isFavorite = req.body.isFavorite
             kataProgress.priority = Math.max(kataProgress.nbWrong / kataProgress.nbViews, (1 - kataProgress.nbCorrect/10)) || 0
+
+            
+            console.log('save : ' , kataProgress)
 
           const saveResult = await kataProgress.save()
 
-          console.log('save : ' , kataProgress)
 
     res.json(response(kataProgress.userId.token, req.body.token, saveResult))
         
