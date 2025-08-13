@@ -57,14 +57,14 @@ router.post("/kanaGen", async (req, res) => {
         name: nameK[i],
         number: numK,     
         type: typeK,        
-        fullName: katakanaNames[i] 
+
       }).save();
 
       await new Hiragana({
         name: nameH[i],
         number: numH,
         type: typeH,
-        fullName: hiraganaNames[i]
+
       }).save();
     }
 
