@@ -70,14 +70,11 @@ router.get("/getUser/:id/:token", async (req, res) => {
 // route pour l'inscription
 router.post("/signup", async (req, res) => {
   if (!checkBody(req.body, ["userName", "password", "email"])) {
-    res.json({ result: false, message: "Champs manquants ou vides", error: "Missing or empty fields" });
+    res.json({ result: false, message: "Champs manquants ou vides.", error: "Missing or empty fields" });
     return;
   }
-  try {
-
-
-    
-     console.log('debut de route')
+  try {    
+    console.log('debut de route')
     const data = await User.findOne({ email: req.body.email });
     if (data === null) {
       // creation d'un utilisateur
@@ -121,7 +118,7 @@ router.post("/signup", async (req, res) => {
 
       // on sauvegarde l'utilisateur
       await newUser.save();
-      console.log('savegarde user en bd')
+      console.log('sauvegarde user en bd')
 
       res.json({
         result: true,
@@ -132,7 +129,7 @@ router.post("/signup", async (req, res) => {
         user: newUser,
       });
     } else {
-      res.json({ result: false, message: "l'utilisateur n'éxite pas" ,error: "User already exists" });
+      res.json({ result: false, message: "L'utilisateur existe déjà." ,error: "User already exists" });
     }
   } catch (error) {
     console.log("error", error);
@@ -143,7 +140,7 @@ router.post("/signup", async (req, res) => {
 // route pour la connexion
 router.post("/signin", async (req, res) => {
   if (!checkBody(req.body, ["password", "email"])) {
-    res.json({ result: false, message: "Champs manquants ou vides", error: "Missing or empty fields" });
+    res.json({ result: false, message: "Champs manquants ou vides.", error: "Missing or empty fields" });
     return;
   }
 
@@ -164,8 +161,8 @@ router.post("/signin", async (req, res) => {
   } else {
     res.json(
       user
-        ? { result: false, error: "wrong password" }
-        : { result: false, error: "user not found" }
+        ? { result: false,message: "Utilisateur ou mot de passe incorrect.", error: "wrong password" }
+        : { result: false,message: "Utilisateur ou mot de passe incorrect.", error: "user not found" }
     );
   }
 });
