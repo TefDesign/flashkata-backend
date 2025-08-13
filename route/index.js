@@ -54,14 +54,14 @@ router.post("/kanaGen", async (req, res) => {
       const [numH, typeH, nameH] = hiraganaNames[i].split("-");
 
       await new Katakana({
-        name: nameK[i],
+        name: nameK,
         number: numK,     
         type: typeK,        
 
       }).save();
 
       await new Hiragana({
-        name: nameH[i],
+        name: nameH,
         number: numH,
         type: typeH,
 
