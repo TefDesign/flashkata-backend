@@ -42,7 +42,7 @@ function filter(filterType, list, nbSlider) {
 
 router.post("/getCards", async (req, res) => {
 
-    const { nbSlider, kataType, filterType, id, token, isDevMode} = req.body
+    const { nbSlider, kataType, filterType, id, token} = req.body
      
     // ajout token plus tard
     if (!checkBody(req.body, ["id", "token"])) {
