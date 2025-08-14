@@ -10,6 +10,7 @@ const hiraganaProgress = require("../models/HiraganaProgress");
 const { checkBody } = require("../modules/checkBody");
 const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
+const { createProgress } = require("../modules/createProgress");
 
 // models pour les objets challenge
 const challengeModel = {
@@ -25,30 +26,7 @@ const challengeModel = {
   "10min": 0,
 };
 
-// fonction pour créer les progressions d'un utilisateur
-const createProgress = async ({ list, userId, ProgressModel, idField }) => {
-  const progressIds = [];
 
-  for (const item of list) {
-    const newProgress = await new ProgressModel({
-      [idField]: item._id,
-      userId: userId,
-      isValidated: false,
-      validatedAt: new Date(),
-      name: item.name,
-      responseTime: 0,
-      nbViews: 0,
-      nbCorrect: 0,
-      nbWrong: 0,
-      isFavorite: false,
-      priority: 0.5,
-    }).save();
-
-    progressIds.push(newProgress._id);
-  }
-
-  return progressIds;
-};
 
 // recupère les information d'un utilisateur avec les params
 router.get("/getUser/:id/:token", async (req, res) => {
@@ -240,5 +218,6 @@ router.patch("/challengeScore", async (req, res) => {
   }
 
 })
+
 
 module.exports = router;
