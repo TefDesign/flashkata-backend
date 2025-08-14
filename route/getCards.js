@@ -20,7 +20,7 @@ function filter(filterType, list, nbSlider) {
         filtered = list.filter(e => { return e.nbViews <= 0 })
         filtered && filtered.length > nbSlider ? null : filtered = list.filter(e => { return (e.nbViews < averageView && e.priority >= Math.random()) || e.isFavorite })
 
-        return filtered
+        return filtered.length
     }
 
     else if (filterType === "onlyViewed" || filterType === "ChallengeAll") {
@@ -42,15 +42,18 @@ function filter(filterType, list, nbSlider) {
 
 router.post("/getCards", async (req, res) => {
 
-    const { nbSlider, kataType, filterType, id, token} = req.body
+
+
+    const { nbSlider, kataType, filterType, id, isDevMode, token} = req.body
      
+    console.log("1", id, token)
     // ajout token plus tard
     if (!checkBody(req.body, ["id", "token"])) {
         res.json({ result: false, message: "Champs manquants ou vides" , error: "Missing or empty fields" });
         return;
     }
     
-
+    console.log("2")
     // Unviewed Kata Ok
     try {
 
@@ -72,11 +75,15 @@ router.post("/getCards", async (req, res) => {
                 }
             }) : null
 
+console.log("3", user._id)
+
         // verification du token
          if (user.token !== token) {
             res.json({ result: false, message: "token invalide" ,error: "token invalide" });
             return
         }
+
+console.log("4")
 
         // creation de la liste non filtrée
         let list = [];
@@ -94,22 +101,22 @@ router.post("/getCards", async (req, res) => {
         //  selection des cartes
         let selected = [];
 
+console.log("5")
+
         for (let i = 0; i < nbSlider; i++) {
-
             if (filtered.length > 0) {
-
                 const randomIndex = Math.floor(Math.random() * filtered.length);
                 selected.push(filtered[randomIndex])
                 filtered.splice(randomIndex, 1)
 
             } else {
-
                 const randomIndex = Math.floor(Math.random() * list.length);
                 selected.push(list[randomIndex])
                 list.splice(randomIndex, 1)
-
             }
         }
+        
+console.log("6")
 
         // on retourne la liste des kata selected sans leurs progression
         return res.json({ result: true, data: isDevMode ? selected : selected.map(select => select.hiraganaId || select.katakanaId )})
