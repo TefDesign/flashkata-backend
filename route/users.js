@@ -10,6 +10,7 @@ const hiraganaProgress = require("../models/HiraganaProgress");
 const { checkBody } = require("../modules/checkBody");
 const uid2 = require("uid2");
 const bcrypt = require("bcrypt");
+const { createProgress } = require("../modules/createProgress");
 
 // models pour les objets challenge
 const challengeModel = {
@@ -25,30 +26,7 @@ const challengeModel = {
   "10min": 0,
 };
 
-// fonction pour créer les progressions d'un utilisateur
-const createProgress = async ({ list, userId, ProgressModel, idField }) => {
-  const progressIds = [];
 
-  for (const item of list) {
-    const newProgress = await new ProgressModel({
-      [idField]: item._id,
-      userId: userId,
-      isValidated: false,
-      validatedAt: new Date(),
-      name: item.name,
-      responseTime: 0,
-      nbViews: 0,
-      nbCorrect: 0,
-      nbWrong: 0,
-      isFavorite: false,
-      priority: 0.5,
-    }).save();
-
-    progressIds.push(newProgress._id);
-  }
-
-  return progressIds;
-};
 
 // recupère les information d'un utilisateur avec les params
 router.get("/getUser/:id/:token", async (req, res) => {
@@ -200,3 +178,45 @@ router.patch("/modify", async (req, res) => {
     res.json({ result: false, error: error });
   }
 });
+
+router.patch("/challengeScore", async (req, res) => {
+
+  if (!checkBody(req.body, ["token", "id"])) {
+    res.json({ result: false, message: "Champs manquants ou vides" , error: "Missing or empty fields" });
+    return;
+  }
+  const user = await User.findById({ _id: req.body.id });
+  try {
+    // verification du token
+    if (req.body.token !== user.token) {
+      res.json({ result: false, messgae: "token invalid", error: "invalid token" });
+      return;
+    }
+
+    const { score, time } = req.body
+
+    // ATTENTION req.body de Allchallenge = "all" donc il faut -> "All" car AllChallenge et pas allChallenge dans models
+    let { challengeType }  = req.body
+
+
+      if (challengeType === "hiragana" || challengeType === "katakana")
+      {
+        user[`${challengeType}Challenge`][time] < score ? user[`${challengeType}Challenge`][time] = score : null
+        await user.save();
+      } 
+      
+      if (challengeType === "all"){
+        challengeType = challengeType[0].toUpperCase() + challengeType.slice(1)
+        user[`${challengeType}Challenge`][time] < score ? user[`${challengeType}Challenge`][time] = score : null        
+        await user.save();
+      }
+    
+    res.json({ result: true, user: user[`${challengeType}Challenge`] });
+  } catch (error) {
+    res.json({ result: false, error: error });
+  }
+
+})
+
+
+module.exports = router;
