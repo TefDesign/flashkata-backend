@@ -205,6 +205,7 @@ router.patch("/challengeScore", async (req, res) => {
         await user.save();
       } 
       
+
       if (challengeType === "all"){
         challengeType = challengeType[0].toUpperCase() + challengeType.slice(1)
         user[`${challengeType}Challenge`][time] < score ? user[`${challengeType}Challenge`][time] = score : null        
