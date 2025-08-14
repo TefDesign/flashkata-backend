@@ -201,4 +201,44 @@ router.patch("/modify", async (req, res) => {
   }
 });
 
+router.patch("/challengeScore", async (req, res) => {
+
+  if (!checkBody(req.body, ["token", "id"])) {
+    res.json({ result: false, message: "Champs manquants ou vides" , error: "Missing or empty fields" });
+    return;
+  }
+  const user = await User.findById({ _id: req.body.id });
+  try {
+    // verification du token
+    if (req.body.token !== user.token) {
+      res.json({ result: false, messgae: "token invalid", error: "invalid token" });
+      return;
+    }
+
+    const { score, time } = req.body
+
+    // ATTENTION req.body de Allchallenge = "all" donc il faut -> "All" car AllChallenge et pas allChallenge dans models
+    let { challengeType }  = req.body
+
+
+      if (challengeType === "hiragana" || challengeType === "katakana")
+      {
+        user[`${challengeType}Challenge`][time] < score ? user[`${challengeType}Challenge`][time] = score : null
+        await user.save();
+      } 
+      
+
+      if (challengeType === "all"){
+        challengeType = challengeType[0].toUpperCase() + challengeType.slice(1)
+        user[`${challengeType}Challenge`][time] < score ? user[`${challengeType}Challenge`][time] = score : null        
+        await user.save();
+      }
+    
+    res.json({ result: true, user: user[`${challengeType}Challenge`] });
+  } catch (error) {
+    res.json({ result: false, error: error });
+  }
+
+})
+
 module.exports = router;
