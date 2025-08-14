@@ -65,7 +65,6 @@ router.post('/kataProgress', async (req, res) => {
 // route de modification d'un KataProgress
 router.patch('/kataProgress/modify', async (req, res) => {
   try {
-    console.log('debug route')
         if (!checkBody(req.body, ["userId", "token"])) {
             res.json({ result: false, error: "Missing or empty fields" });
            return;
