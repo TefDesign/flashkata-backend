@@ -197,22 +197,34 @@ router.patch("/challengeScore", async (req, res) => {
 
     // ATTENTION req.body de Allchallenge = "all" donc il faut -> "All" car AllChallenge et pas allChallenge dans models
     let { challengeType }  = req.body
-
+      
+      let isNewRecord = false;
 
       if (challengeType === "hiragana" || challengeType === "katakana")
       {
-        user[`${challengeType}Challenge`][time] < score ? user[`${challengeType}Challenge`][time] = score : null
-        await user.save();
+        const previous = user[`${challengeType}Challenge`][time] || 0;
+        if (previous < score){
+          user[`${challengeType}Challenge`][time] = score
+          await user.save();
+          isNewRecord = true
+          console.log("isnewrecordhirakata", isNewRecord)
+        }
       } 
       
 
       if (challengeType === "all"){
-        challengeType = challengeType[0].toUpperCase() + challengeType.slice(1)
-        user[`${challengeType}Challenge`][time] < score ? user[`${challengeType}Challenge`][time] = score : null        
-        await user.save();
+        const previous = user[`${challengeType}Challenge`][time] || 0;
+        if (previous < score){
+          user[`${challengeType}Challenge`][time] = score
+          await user.save();
+          isNewRecord = true
+          console.log("isnewrecordAll", isNewRecord)
+        }
       }
+      
+    console.log("isnewrecord", isNewRecord)
     
-    res.json({ result: true, user: user[`${challengeType}Challenge`] });
+    res.json({ result: true, isNewRecord, user: user[`${challengeType}Challenge`] });
   } catch (error) {
     res.json({ result: false, error: error });
   }
