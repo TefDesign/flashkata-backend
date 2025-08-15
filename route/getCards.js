@@ -11,32 +11,73 @@ const { checkBody } = require("../modules/checkBody");
 
 // fonction pour filtrer les cartes en fonction du type de filtre et de leurs priorités
 function filter(filterType, list, nbSlider) {
+    console.log('filter début');
 
-    let averageView = list.reduce((acc, value) => value.nbViews + acc, 0) / list.length
-    let filtered;
+    let katakanaLimite = 10;
+    let hiraganaLimite = 45 + 10;
+
+    // Katakana
+    let value = 0;
+    for (let i = 0; i <= katakanaLimite && i < 46; i++) {
+        value += list[i]?.priority || 0; 
+        console.log(value)
+    }
+    if (value < katakanaLimite/1.25) {
+        katakanaLimite += 5;
+        value = 0
+    }
+    
+    // Hiragana
+    
+    value = 0;
+    for (let i = 46; i <= hiraganaLimite && i < 92; i++) {
+        value += list[i]?.priority || 0; 
+    }
+    if (value < hiraganaLimite/1.25) {
+        hiraganaLimite += 5
+        value = 0
+    };
+
+    console.log("limites établies", { katakanaLimite, hiraganaLimite });
+
+    let filtered = [
+        ...list.filter((_, index) => index < katakanaLimite),
+        ...list.filter((_, index) => index > 45 && index < hiraganaLimite)
+    ];
+
+    let averageView = filtered.reduce((acc, v) => acc + v.nbViews, 0) / list.length;
+
+    const keepMinSize = (arr, extraFilter) => {
+        if (arr.length < nbSlider) {
+            return [
+                ...arr,
+                ...list.filter(extraFilter)
+            ];
+        }
+        return arr;
+    };
 
     if (filterType === "neverViewed") {
+        filtered = [...filtered.filter((e, i) =>
+            e.nbViews <= averageView || e.priority >= Math.random() || e.isFavorite
+        ), ...filtered]
+        return filtered;
+     }
 
-        filtered = list.filter(e => { return e.nbViews <= 0 })
-        filtered && filtered.length > nbSlider ? null : filtered = list.filter(e => { return (e.nbViews < averageView && e.priority >= Math.random()) || e.isFavorite })
-
-        return filtered.length
+    if (filterType === "onlyViewed" || filterType === "ChallengeAll") {
+        filtered = filtered.filter(e => e.nbViews > 0 || e.isFavorite);
+        filtered = [...filtered.filter(e => e.nbViews > averageView || e.isFavorite), ...filtered]
+        filtered = [...filtered.filter(e => e.priority >= Math.random() || e.isFavorite), ...filterType];
+        return filtered;
     }
 
-    else if (filterType === "onlyViewed" || filterType === "ChallengeAll") {
-        filtered = list.filter(e => { return e.nbViews > 0 || e.isFavorite})
-        filtered && filtered.length > nbSlider ? null : filtered = list.filter(e => { return e.nbViews > averageView || e.isFavorite })
-        filtered = filtered.filter(e => { return e.priority >= Math.random() || e.isFavorite})
-
-        return filtered
-    }
-
-    else if (filterType === "all") {
-        filtered = list.filter(e => { return ( e.priority >= Math.random()) || e.isFavorite})
-
-        return filtered
+    if (filterType === "all") {
+        filtered = filtered.filter(e => e.priority >= Math.random() || e.isFavorite);
+        return filtered;
     }
 }
+
+
 
 
 
