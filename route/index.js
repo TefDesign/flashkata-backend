@@ -31,20 +31,6 @@ const katakanaNames = [
   "46-katakana-wa", "50-katakana-wo", "51-katakana-n"
 ];
 
-const kataNames = [
-'a', 'i', 'u', 'e', 'o',
-'ka', 'ki', 'ku', 'ke', 'ko',
-'sa', 'shi', 'su', 'se', 'so',
-'ta', 'chi', 'tsu', 'te', 'to',
-'na', 'ni', 'nu', 'ne', 'no',
-'ha', 'hi', 'fu', 'he', 'ho',
-'ma', 'mi', 'mu', 'me', 'mo',
-'ya', 'yu', 'yo',
-'ra', 'ri', 'ru', 're', 'ro',
-'wa', 'wo', 'n'
-];
-
-
 // créer la liste des kata en bd, commande en dev pas en prod
 router.post("/kanaGen", async (req, res) => {
   try {
@@ -73,36 +59,6 @@ router.post("/kanaGen", async (req, res) => {
   } catch (error) {
     res.json({ error, message: "erreur d'enregistrement des katas" });
   }
-});
-
-
-router.post('/majKana', async (req, res) => {
-  try {
-    for (let i = 0; i < kataNames.length; i++) {
-
-      const [numK, typeK, nameK] = katakanaNames[i].split('-');
-      const [numH, typeH, nameH] = hiraganaNames[i].split('-');
-
-      await Katakana.updateOne({ name: kataNames[i] }, { type: typeK, number: numK });
-
-      await Hiragana.updateOne({ name: kataNames[i] }, { type: typeH, number: numH });
-    }
-
-    res.json({ result: true });
-  } catch (err) {
-    res.json({ error: err });
-  }
-});
-
-
-router.get("/katakana", async (req, res) => {
-  const resp = await Katakana.find({});
-  res.json(resp);
-});
-
-router.get("/hiragana", async (req, res) => {
-  const resp = await Hiragana.find({});
-  res.json(resp);
 });
 
 module.exports = router;
